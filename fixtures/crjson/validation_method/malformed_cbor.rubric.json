@@ -1,115 +1,151 @@
 {
-  "assertion_label": {
+  "identity:assertion_label": {
     "outcome": "true",
     "matches": []
   },
-  "exactly_one_hard_binding": {
+  "identity:exactly_one_hard_binding": {
     "outcome": "false",
     "matches": [
       "test:urn:uuid:48d44c17-30ba-4e47-bd58-e0987dbe2826/cawg.identity"
     ]
   },
-  "hard_binding_is_claims": {
+  "identity:hard_binding_is_claims": {
     "outcome": "true",
     "matches": []
   },
-  "ica_algorithm_allowed": {
+  "identity:ica_algorithm_allowed": {
     "outcome": "true",
     "matches": []
   },
-  "ica_credential_visible": {
+  "identity:ica_credential_visible": {
     "outcome": "true",
     "matches": []
   },
-  "ica_issuer_did": {
+  "identity:ica_issuer_did": {
     "outcome": "true",
     "matches": []
   },
-  "ica_valid_from_present": {
+  "identity:ica_valid_from_present": {
     "outcome": "true",
     "matches": []
   },
-  "ica_verified_identities_nonempty": {
+  "identity:ica_verified_identities_nonempty": {
     "outcome": "true",
     "matches": []
   },
-  "ica_verified_identity_required_fields": {
+  "identity:ica_verified_identity_required_fields": {
     "outcome": "true",
     "matches": []
   },
-  "ica_verified_identity_type_fields": {
+  "identity:ica_verified_identity_type_fields": {
     "outcome": "true",
     "matches": []
   },
-  "identity_assertion_present": {
+  "identity:identity_assertion_present": {
     "outcome": "true",
     "matches": []
   },
-  "no_duplicate_references": {
+  "identity:no_duplicate_references": {
     "outcome": "true",
     "matches": []
   },
-  "no_removed_fields": {
+  "identity:no_removed_fields": {
     "outcome": "true",
     "matches": []
   },
-  "no_self_reference": {
+  "identity:no_self_reference": {
     "outcome": "true",
     "matches": []
   },
-  "pads_zero": {
+  "identity:pads_zero": {
     "outcome": "true",
     "matches": []
   },
-  "referenced_assertions_in_own_claim": {
+  "identity:referenced_assertions_in_own_claim": {
     "outcome": "true",
     "matches": []
   },
-  "referenced_assertions_nonempty": {
+  "identity:referenced_assertions_nonempty": {
     "outcome": "false",
     "matches": [
       "test:urn:uuid:48d44c17-30ba-4e47-bd58-e0987dbe2826/cawg.identity"
     ]
   },
-  "referenced_assertions_resolve": {
+  "identity:referenced_assertions_resolve": {
     "outcome": "true",
     "matches": []
   },
-  "required_fields": {
+  "identity:required_fields": {
     "outcome": "false",
     "matches": [
       "test:urn:uuid:48d44c17-30ba-4e47-bd58-e0987dbe2826/cawg.identity"
     ]
   },
-  "role_cawg_namespace": {
+  "identity:role_cawg_namespace": {
     "outcome": "true",
     "matches": []
   },
-  "role_wellformed": {
+  "identity:role_wellformed": {
     "outcome": "true",
     "matches": []
   },
-  "sig_type_known": {
+  "identity:sig_type_known": {
     "outcome": "warning",
     "matches": [
       "test:urn:uuid:48d44c17-30ba-4e47-bd58-e0987dbe2826/cawg.identity"
     ]
   },
-  "validation_no_failures": {
+  "identity:validation_no_failures": {
     "outcome": "true",
     "matches": []
   },
-  "validation_status_reported": {
+  "identity:validation_status_reported": {
     "outcome": "warning",
     "matches": [
       "test:urn:uuid:48d44c17-30ba-4e47-bd58-e0987dbe2826/cawg.identity"
     ]
   },
-  "x509_algorithm_allowed": {
+  "identity:x509_algorithm_allowed": {
     "outcome": "true",
     "matches": []
   },
-  "x509_signature_decodable": {
+  "identity:x509_signature_decodable": {
+    "outcome": "true",
+    "matches": []
+  },
+  "metadata:assertion_label": {
+    "outcome": "true",
+    "matches": []
+  },
+  "metadata:context_iris_absolute": {
+    "outcome": "true",
+    "matches": []
+  },
+  "metadata:context_present": {
+    "outcome": "true",
+    "matches": []
+  },
+  "metadata:gathered_referenced_by_identity": {
+    "outcome": "true",
+    "matches": []
+  },
+  "metadata:json_ld_object": {
+    "outcome": "true",
+    "matches": []
+  },
+  "metadata:metadata_assertion_present": {
+    "outcome": "false",
+    "matches": []
+  },
+  "metadata:terms_defined_in_context": {
+    "outcome": "true",
+    "matches": []
+  },
+  "metadata:urn_values_wellformed": {
+    "outcome": "true",
+    "matches": []
+  },
+  "metadata:validation_no_failures": {
     "outcome": "true",
     "matches": []
   }

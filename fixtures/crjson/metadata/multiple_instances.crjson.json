@@ -1,0 +1,189 @@
+{
+  "@context": {
+    "@vocab": "https://c2pa.org/crjson",
+    "extras": "https://c2pa.org/crjson/extras"
+  },
+  "manifests": [
+    {
+      "label": "urn:c2pa:711c1077-58b5-49b5-98f4-6abab565527e",
+      "isUpdateManifest": false,
+      "isCompressedManifest": false,
+      "assertions": {
+        "cawg.metadata": {
+          "@context": {
+            "exif": "http://ns.adobe.com/exif/1.0/",
+            "exifEX": "http://cipa.jp/exif/2.32/",
+            "tiff": "http://ns.adobe.com/tiff/1.0/",
+            "Iptc4xmpCore": "http://iptc.org/std/Iptc4xmpCore/1.0/xmlns/",
+            "Iptc4xmpExt": "http://iptc.org/std/Iptc4xmpExt/2008-02-29/",
+            "dc": "http://purl.org/dc/elements/1.1/",
+            "photoshop": "http://ns.adobe.com/photoshop/1.0/"
+          },
+          "photoshop:DateCreated": "Aug 31, 2022",
+          "Iptc4xmpExt:DigitalSourceType": "https://cv.iptc.org/newscodes/digitalsourcetype/digitalCapture",
+          "exif:GPSVersionID": "2.2.0.0",
+          "exif:GPSLatitude": "39,21.102N",
+          "exif:GPSLongitude": "74,26.5737W",
+          "exif:GPSAltitudeRef": 0,
+          "exif:GPSAltitude": "100963/29890",
+          "exif:GPSTimeStamp": "2019-09-22T18:22:57Z",
+          "tiff:Make": "CameraCompany",
+          "tiff:Model": "Shooter S1",
+          "dc:creator": [
+            "Example Photographer"
+          ]
+        },
+        "cawg.metadata__1": {
+          "@context": {
+            "dc": "http://purl.org/dc/elements/1.1/"
+          },
+          "dc:contributor": [
+            "Edwin Stanton Porter",
+            "urn:doi:10.23/EF98-D5B3-1931-90A8-F50C"
+          ],
+          "dc:identifier": [
+            "The Great Train Robbery",
+            "urn:eidr:10.5240/7791-8534-2C23-9030-8610-5"
+          ],
+          "dc:date": "1903-12-01",
+          "dc:type": "MovingImage"
+        },
+        "c2pa.actions.v2": {
+          "actions": [
+            {
+              "action": "c2pa.created",
+              "digitalSourceType": "http://c2pa.org/digitalsourcetype/empty"
+            }
+          ]
+        },
+        "c2pa.hash.data": {
+          "exclusions": [
+            {
+              "start": 2,
+              "length": 7452
+            }
+          ],
+          "name": "jumbf manifest",
+          "alg": "sha256",
+          "hash": "b64'msOVygT8nTSKz2+Bkg9eiU0zY0HD92TKhsNU7sb3wtY='",
+          "pad": "b64'AAAAAAAAAAAA'"
+        }
+      },
+      "claim.v2": {
+        "instanceID": "xmp.iid:c12ed5c0-79c4-4830-88c7-cc76d7502a4c",
+        "signature": "self#jumbf=/c2pa/urn:c2pa:711c1077-58b5-49b5-98f4-6abab565527e/c2pa.signature",
+        "claim_generator_info": {
+          "name": "cawg-test-suite make-assets",
+          "version": "0.1.0",
+          "org.contentauth.c2pa_rs": "0.91.2"
+        },
+        "alg": "sha256",
+        "dc:title": "multiple_instances.jpg",
+        "redacted_assertions": [],
+        "created_assertions": [
+          {
+            "url": "self#jumbf=c2pa.assertions/cawg.metadata",
+            "hash": "b64'avrO8u7jZ0fbuS4fKkk7K6W05Yc5ggD08XJ3xvJfU9o='"
+          },
+          {
+            "url": "self#jumbf=c2pa.assertions/cawg.metadata__1",
+            "hash": "b64'RnzXSCZOZOvS0YrjJf6TfUAa8F+SY+bZjTOf8Xmfwks='"
+          },
+          {
+            "url": "self#jumbf=c2pa.assertions/c2pa.actions.v2",
+            "hash": "b64'+M9flIl3rjWQcNy1I0Rwfq8VZTvfV78mA8SimCiF7l8='"
+          },
+          {
+            "url": "self#jumbf=c2pa.assertions/c2pa.hash.data",
+            "hash": "b64'TZ2A6Eu/T8TOXIIeNLcXefkfhp9NIoW26KzsqFWlFEA='"
+          }
+        ],
+        "gathered_assertions": []
+      },
+      "signature": {
+        "algorithm": "ps256",
+        "certificateInfo": {
+          "serialNumber": "7e3e629adccfe7d99710135b5a48056972df8199",
+          "issuer": {
+            "C": "US",
+            "ST": "CA",
+            "L": "Somewhere",
+            "O": "C2PA Test Intermediate Root CA",
+            "OU": "FOR TESTING_ONLY",
+            "CN": "Intermediate CA"
+          },
+          "subject": {
+            "C": "US",
+            "ST": "CA",
+            "L": "Somewhere",
+            "O": "C2PA Test Signing Cert",
+            "OU": "FOR TESTING_ONLY",
+            "CN": "C2PA Signer"
+          },
+          "validity": {
+            "notBefore": "2022-06-10T18:46:28+00:00",
+            "notAfter": "2030-08-26T18:46:28+00:00"
+          }
+        }
+      },
+      "validationResults": {
+        "success": [
+          {
+            "code": "signingCredential.trusted",
+            "url": "self#jumbf=/c2pa/urn:c2pa:711c1077-58b5-49b5-98f4-6abab565527e/c2pa.signature",
+            "explanation": "signing certificate trusted, found in [https://c2pa-rs/test_cert_trust_list] trust anchors"
+          },
+          {
+            "code": "claimSignature.insideValidity",
+            "url": "self#jumbf=/c2pa/urn:c2pa:711c1077-58b5-49b5-98f4-6abab565527e/c2pa.signature",
+            "explanation": "claim signature valid"
+          },
+          {
+            "code": "claimSignature.validated",
+            "url": "self#jumbf=/c2pa/urn:c2pa:711c1077-58b5-49b5-98f4-6abab565527e/c2pa.signature",
+            "explanation": "claim signature valid"
+          },
+          {
+            "code": "assertion.hashedURI.match",
+            "url": "self#jumbf=/c2pa/urn:c2pa:711c1077-58b5-49b5-98f4-6abab565527e/c2pa.assertions/cawg.metadata",
+            "explanation": "hashed uri matched: self#jumbf=c2pa.assertions/cawg.metadata"
+          },
+          {
+            "code": "assertion.hashedURI.match",
+            "url": "self#jumbf=/c2pa/urn:c2pa:711c1077-58b5-49b5-98f4-6abab565527e/c2pa.assertions/cawg.metadata__1",
+            "explanation": "hashed uri matched: self#jumbf=c2pa.assertions/cawg.metadata__1"
+          },
+          {
+            "code": "assertion.hashedURI.match",
+            "url": "self#jumbf=/c2pa/urn:c2pa:711c1077-58b5-49b5-98f4-6abab565527e/c2pa.assertions/c2pa.actions.v2",
+            "explanation": "hashed uri matched: self#jumbf=c2pa.assertions/c2pa.actions.v2"
+          },
+          {
+            "code": "assertion.hashedURI.match",
+            "url": "self#jumbf=/c2pa/urn:c2pa:711c1077-58b5-49b5-98f4-6abab565527e/c2pa.assertions/c2pa.hash.data",
+            "explanation": "hashed uri matched: self#jumbf=c2pa.assertions/c2pa.hash.data"
+          },
+          {
+            "code": "assertion.dataHash.match",
+            "url": "self#jumbf=/c2pa/urn:c2pa:711c1077-58b5-49b5-98f4-6abab565527e/c2pa.assertions/c2pa.hash.data",
+            "explanation": "data hash valid"
+          }
+        ],
+        "informational": [
+          {
+            "code": "signingCredential.ocsp.skipped",
+            "url": "self#jumbf=/c2pa/urn:c2pa:711c1077-58b5-49b5-98f4-6abab565527e/c2pa.signature",
+            "explanation": "OCSP fetching skipped"
+          }
+        ],
+        "failure": [],
+        "specVersion": "2.3.0",
+        "validationTime": "2026-10-10T22:09:11.124878+00:00"
+      }
+    }
+  ],
+  "jsonGenerator": {
+    "name": "c2pa-rs",
+    "version": "0.91.2"
+  }
+}

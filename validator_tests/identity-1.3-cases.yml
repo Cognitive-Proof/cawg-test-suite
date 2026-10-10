@@ -6,10 +6,13 @@
 # whose url is the identity assertion label (§7.2) or a JUMBF URI ending in it.
 #
 # Keys:
+#   subject:            which status entries are checked: identity (default), metadata or
+#                       manifest (every entry). Set per file, or per case to override.
 #   expect_failure:     every listed code appears in validationResults.failure
 #   expect_success:     every listed code appears in validationResults.success
 #   expect_any:         at least one listed code appears (any category)
 #   forbid_failure_prefixes: no failure code starts with any listed prefix
+#   forbid_any_failure: no failure code at all
 #   level:              "must" (default) or "should": the spec keyword behind the expectation
 #
 # Every case also checks consistency: a validator must not report
@@ -18,6 +21,7 @@
 # assertion was validated).
 
 spec: "CAWG Identity Assertion 1.3 (https://cawg.io/identity/1.3/)"
+subject: identity
 
 cases:
   # --- Valid assertions -----------------------------------------------------

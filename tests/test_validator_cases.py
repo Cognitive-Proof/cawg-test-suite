@@ -1,18 +1,14 @@
 """Validator cases: structure checks and the c2pa-rs baseline."""
 import os
 
-import yaml
-
 from conftest import FIXTURES, REPO_ROOT
 from validator_tests import check_validator
 
-CASES_PATH = os.path.join(REPO_ROOT, "validator_tests", "cases.yml")
 BASELINE = os.path.join(REPO_ROOT, "validator_tests", "baselines", "c2pa-rs-0.91.2.yml")
 
 
 def _cases():
-    with open(CASES_PATH) as f:
-        return yaml.safe_load(f)["cases"]
+    return check_validator.load_cases()
 
 
 def test_case_ids_unique():
@@ -34,7 +30,7 @@ def test_every_asset_has_a_case():
 
 
 def test_c2pa_rs_baseline_matches():
-    results = check_validator.run(os.path.join(FIXTURES, "crjson"), CASES_PATH)
+    results = check_validator.run(os.path.join(FIXTURES, "crjson"))
     failed = {case["id"] for case, problems in results if problems}
     assert failed == check_validator.load_known_failures(BASELINE)
 
@@ -46,3 +42,17 @@ def test_consistency_rule_flags_success_with_failure():
         "failure": [{"code": "cawg.identity.pad.invalid", "url": url}]}}]}
     problems = check_validator.check_case({"expect_failure": ["cawg.identity.pad.invalid"]}, crjson)
     assert problems == ["cawg.identity.well-formed reported alongside a cawg.identity.* failure"]
+
+
+def test_case_files_found():
+    names = {os.path.basename(p) for p in check_validator.DEFAULT_CASES}
+    assert {"identity-1.3-cases.yml", "metadata-1.1-cases.yml"} <= names
+
+
+def test_forbid_any_failure_on_manifest_subject():
+    crjson = {"manifests": [{"validationResults": {"failure": [
+        {"code": "assertion.metadata.disallowed",
+         "url": "self#jumbf=/c2pa/urn:c2pa:x/c2pa.assertions/cawg.metadata"}]}}]}
+    case = {"subject": "manifest", "forbid_any_failure": True}
+    assert check_validator.check_case(case, crjson) == [
+        "unexpected failure code(s) assertion.metadata.disallowed"]

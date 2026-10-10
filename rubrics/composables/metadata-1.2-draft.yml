@@ -1,0 +1,30 @@
+# CAWG Metadata Assertion 1.2 draft: recommendations (warnings only).
+# These come from the 1.2 working draft and may change before ratification.
+include:
+  - globals.yml
+
+---
+
+- id: metadata:gathered_referenced_by_identity
+  description: A metadata assertion in gathered_assertions (not attributed to the manifest signer) is referenced by a CAWG identity assertion in the same manifest.
+  specSection: "CAWG Metadata 1.2-draft §Use with identity assertion"
+  warnIfMatched: true
+  expression: |
+    _metadata()[?contains(gatheredLabels, label) && !contains(identityRefLabels, label)].ref
+  reportText:
+    'true':
+      en: "All gathered metadata assertions are referenced by an identity assertion"
+    'false':
+      en: "Gathered metadata assertions not referenced by any identity assertion: {{matches}}"
+
+- id: metadata:urn_values_wellformed
+  description: "Top-level values that begin with urn: are well-formed URNs (urn:<nid>:<nss>), since consumers treat them as URNs rather than human-readable text."
+  specSection: "CAWG Metadata 1.2-draft §Use with media industry identifiers"
+  warnIfMatched: true
+  expression: |
+    _metadata()[?type(value) == "object" && length(_malformedUrns(@)) > `0`].ref
+  reportText:
+    'true':
+      en: "All urn: values are well-formed URNs"
+    'false':
+      en: "Metadata assertions with malformed urn: values: {{matches}}"

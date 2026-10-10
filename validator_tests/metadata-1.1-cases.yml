@@ -1,0 +1,62 @@
+# Validator conformance cases for CAWG Metadata Assertion 1.1.
+#
+# The metadata assertion defines no status codes. What a validator must get
+# right is that the field restrictions for c2pa.metadata (C2PA Appendix B) do
+# NOT apply to cawg.metadata, and that metadata content does not otherwise
+# cause a C2PA Manifest to fail validation. Keys are described in
+# identity-1.3-cases.yml.
+
+spec: "CAWG Metadata Assertion 1.1 (https://cawg.io/metadata/1.1/)"
+subject: manifest
+
+cases:
+  - id: metadata_created
+    asset: metadata/created.jpg
+    description: cawg.metadata in created_assertions, using the image example from the specification.
+    spec_section: "§Assertion definition"
+    forbid_any_failure: true
+
+  - id: metadata_outside_c2pa_allowlist
+    asset: metadata/outside_c2pa_allowlist.jpg
+    description: Fields that are not on the c2pa.metadata allowed list (dc:title, dc:contributor, xmpRights, a custom namespace).
+    spec_section: "§Assertion definition (C2PA Appendix B SHALL NOT apply)"
+    forbid_any_failure: true
+
+  - id: metadata_gathered_without_identity
+    asset: metadata/gathered_without_identity.jpg
+    description: cawg.metadata in gathered_assertions with no identity assertion (1.2 draft RECOMMENDS one, but it is not required).
+    spec_section: "§Assertion definition"
+    forbid_any_failure: true
+
+  - id: metadata_multiple_instances
+    asset: metadata/multiple_instances.jpg
+    description: Two metadata assertions, labeled cawg.metadata and cawg.metadata__1.
+    spec_section: "§Assertion definition"
+    forbid_any_failure: true
+
+  - id: metadata_undefined_prefix
+    asset: metadata/undefined_prefix.jpg
+    description: A field uses a prefix not defined in @context. Generators should avoid this, but it is not a validation failure.
+    spec_section: "§Assertion definition"
+    level: should
+    forbid_any_failure: true
+
+  - id: metadata_gathered_with_identity
+    asset: metadata/gathered_with_identity.jpg
+    description: Gathered cawg.metadata referenced by a CAWG X.509 identity assertion; the manifest validates.
+    spec_section: "1.2-draft §Use with identity assertion"
+    forbid_any_failure: true
+
+  - id: metadata_identity_attests
+    asset: metadata/gathered_with_identity.jpg
+    subject: identity
+    description: The identity assertion that references the metadata validates.
+    spec_section: "1.2-draft §Use with identity assertion; Identity 1.3 §7.2"
+    expect_any: [cawg.identity.well-formed, cawg.identity.trusted]
+    forbid_failure_prefixes: [cawg.]
+
+  - id: metadata_media_identifiers
+    asset: metadata/media_identifiers.jpg
+    description: Media industry identifiers (urn:doi, urn:eidr) attested by an identity assertion.
+    spec_section: "1.2-draft §Use with media industry identifiers"
+    forbid_any_failure: true

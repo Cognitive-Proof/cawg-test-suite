@@ -30,6 +30,14 @@ RECIPES = [
             "identity-1.3-validation.yml",
         ],
     },
+    {
+        "target": "cawg-metadata-1.1.rubric.yml",
+        "name": "CAWG Metadata Assertion 1.1 Rubric (with 1.2-draft recommendations)",
+        "files": [
+            "metadata-1.1.yml",
+            "metadata-1.2-draft.yml",
+        ],
+    },
 ]
 
 

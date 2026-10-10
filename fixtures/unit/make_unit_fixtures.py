@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""Regenerate the hand-built crJSON unit fixtures in this directory.
+"""Regenerate the hand-built crJSON unit fixtures under this directory.
 
-Each rubric statement identity:<rule> gets:
-  <rule>-pos.json  minimal crJSON on which every statement passes
+Each rubric statement <category>:<rule> gets, in <category>/:
+  <rule>-pos.json  minimal crJSON on which every statement of that rubric passes
   <rule>-neg.json  the same crJSON with one defect that the rule must catch
 
 Usage: python fixtures/unit/make_unit_fixtures.py
@@ -161,7 +161,7 @@ def rename_identity(doc, new_label):
 
 
 # rule -> (positive fixture, negative fixture)
-CASES = {
+IDENTITY_CASES = {
     "identity_assertion_present": (
         base(),
         m(lambda d: d["manifests"][0]["assertions"].pop("cawg.identity") and None)),
@@ -254,16 +254,107 @@ CASES = {
 }
 
 
-def main():
-    for name in os.listdir(HERE):
+H_METADATA = "b64'bWV0YWRhdGFtZXRhZGF0YW1ldGFkYXRhbWV0YWRhdGE='"
+
+METADATA_VALUE = {
+    "@context": {
+        "dc": "http://purl.org/dc/elements/1.1/",
+        "photoshop": "http://ns.adobe.com/photoshop/1.0/",
+    },
+    "dc:title": "Harbour at dawn",
+    "dc:creator": ["Example Photographer"],
+    "photoshop:City": "Halifax",
+}
+
+
+def mbase(gathered=False, identity_refs=False):
+    """crJSON with one cawg.metadata assertion (created, or gathered).
+
+    identity_refs: the identity assertion also references cawg.metadata.
+    """
+    doc = base()
+    manifest = doc["manifests"][0]
+    manifest["assertions"]["cawg.metadata"] = copy.deepcopy(METADATA_VALUE)
+    claim = manifest["claim.v2"]
+    target = claim["gathered_assertions"] if gathered else claim["created_assertions"]
+    target.insert(0, ref("cawg.metadata", H_METADATA))
+    if identity_refs:
+        refs(doc).insert(0, ref("cawg.metadata", H_METADATA))
+    return doc
+
+
+def md(doc, label="cawg.metadata"):
+    return doc["manifests"][0]["assertions"][label]
+
+
+def mm(fn, **kwargs):
+    doc = mbase(**kwargs)
+    result = fn(doc)
+    return result if result is not None else doc
+
+
+def rename_metadata(doc, new_label):
+    manifest = doc["manifests"][0]
+    manifest["assertions"][new_label] = manifest["assertions"].pop("cawg.metadata")
+    for entry in manifest["claim.v2"]["created_assertions"]:
+        entry["url"] = entry["url"].replace("/cawg.metadata", "/" + new_label)
+
+
+METADATA_CASES = {
+    "metadata_assertion_present": (
+        mbase(),
+        base()),
+    "assertion_label": (
+        mm(lambda d: rename_metadata(d, "cawg.metadata__1")),
+        mm(lambda d: rename_metadata(d, "cawg.metadata.ingredient"))),
+    "json_ld_object": (
+        mbase(),
+        mm(lambda d: d["manifests"][0]["assertions"].update({"cawg.metadata": ["not", "an", "object"]}))),
+    "context_present": (
+        mm(lambda d: md(d).update({"@context": [
+            "https://example.com/remote-context.jsonld",
+            {"dc": "http://purl.org/dc/elements/1.1/",
+             "photoshop": "http://ns.adobe.com/photoshop/1.0/"}]})),
+        mm(lambda d: md(d).pop("@context") and None)),
+    "terms_defined_in_context": (
+        mm(lambda d: md(d).update({"http://purl.org/dc/terms/rights": "CC-BY-4.0"})),
+        mm(lambda d: md(d).update({"exif:GPSLatitude": "39,21.102N"}))),
+    "context_iris_absolute": (
+        mm(lambda d: md(d)["@context"].update({
+            "iptc": {"@id": "http://iptc.org/std/Iptc4xmpCore/1.0/xmlns/"},
+            "media": "urn:example:media:"})),
+        mm(lambda d: md(d)["@context"].update({"photoshop": "ns/photoshop/1.0/"}))),
+    "validation_no_failures": (
+        mbase(),
+        mm(lambda d: d["manifests"][0]["validationResults"]["failure"].append(
+            status("assertion.metadata.disallowed", "cawg.metadata")))),
+    "gathered_referenced_by_identity": (
+        mbase(gathered=True, identity_refs=True),
+        mbase(gathered=True)),
+    "urn_values_wellformed": (
+        mm(lambda d: md(d).update({"dc:identifier": [
+            "The Great Train Robbery", "urn:eidr:10.5240/7791-8534-2C23-9030-8610-5"]})),
+        mm(lambda d: md(d).update({"dc:identifier": "urn:eidr"}))),
+}
+
+
+def write_cases(category, cases):
+    out_dir = os.path.join(HERE, category)
+    os.makedirs(out_dir, exist_ok=True)
+    for name in os.listdir(out_dir):
         if name.endswith(".json"):
-            os.remove(os.path.join(HERE, name))
-    for rule, (pos, neg) in CASES.items():
+            os.remove(os.path.join(out_dir, name))
+    for rule, (pos, neg) in cases.items():
         for suffix, doc in (("pos", pos), ("neg", neg)):
-            with open(os.path.join(HERE, f"{rule}-{suffix}.json"), "w") as f:
+            with open(os.path.join(out_dir, f"{rule}-{suffix}.json"), "w") as f:
                 json.dump(doc, f, indent=2)
                 f.write("\n")
-    print(f"Wrote {2 * len(CASES)} fixtures to {HERE}")
+    print(f"Wrote {2 * len(cases)} fixtures to {out_dir}")
+
+
+def main():
+    write_cases("identity", IDENTITY_CASES)
+    write_cases("metadata", METADATA_CASES)
 
 
 if __name__ == "__main__":

@@ -1,0 +1,91 @@
+# CAWG Metadata Assertion 1.1: assertion definition.
+# Each statement checks every cawg.metadata* assertion in every manifest and
+# reports offending assertions as "<manifest label>/<assertion label>".
+include:
+  - globals.yml
+
+---
+
+- id: metadata:metadata_assertion_present
+  description: The asset contains at least one CAWG metadata assertion. Every other metadata statement is vacuously true without one.
+  specSection: "CAWG Metadata 1.1 §Assertion definition"
+  expression: |
+    length(_metadata()) > `0`
+  reportText:
+    'true':
+      en: "Found at least one cawg.metadata assertion"
+    'false':
+      en: "No cawg.metadata assertion found in any manifest"
+
+- id: metadata:assertion_label
+  description: Metadata assertions are labeled cawg.metadata, with a __N suffix for additional instances.
+  specSection: "CAWG Metadata 1.1 §Assertion definition"
+  failIfMatched: true
+  expression: |
+    _metadata()[?_baseLabel(label) != "cawg.metadata" ||
+      (contains(label, "__") && !(toNumber(split(label, "__")[1]) >= `1`))].ref
+  reportText:
+    'true':
+      en: "All metadata assertion labels are cawg.metadata or cawg.metadata__N"
+    'false':
+      en: "Metadata assertions with invalid labels: {{matches}}"
+
+- id: metadata:json_ld_object
+  description: The assertion content is a single JSON-LD object.
+  specSection: "CAWG Metadata 1.1 §Assertion definition; C2PA 2.4 §Metadata common requirements"
+  failIfMatched: true
+  expression: |
+    _metadata()[?type(value) != "object"].ref
+  reportText:
+    'true':
+      en: "All metadata assertions contain a JSON-LD object"
+    'false':
+      en: "Metadata assertions whose content is not a JSON object: {{matches}}"
+
+- id: metadata:context_present
+  description: The JSON-LD object includes an @context (an object, a URL string, or an array of those).
+  specSection: "CAWG Metadata 1.1 §Assertion definition; C2PA 2.4 §Metadata common requirements"
+  failIfMatched: true
+  expression: |
+    _metadata()[?type(value) == "object" && !contains(`["object", "string", "array"]`, type(value.'@context'))].ref
+  reportText:
+    'true':
+      en: "All metadata assertions include an @context"
+    'false':
+      en: "Metadata assertions without a usable @context: {{matches}}"
+
+- id: metadata:terms_defined_in_context
+  description: Every top-level field uses a prefix or term defined in @context (or is an absolute IRI). JSON-LD processors drop fields that cannot be expanded. Skipped when the context is remote-only.
+  specSection: "CAWG Metadata 1.1 §Assertion definition; C2PA 2.4 §Metadata common requirements"
+  warnIfMatched: true
+  expression: |
+    _metadata()[?type(value) == "object" && length(_undefinedTerms(value, value.'@context')) > `0`].ref
+  reportText:
+    'true':
+      en: "All metadata fields use a prefix or term defined in @context"
+    'false':
+      en: "Metadata assertions with fields whose prefix is not defined in @context: {{matches}}"
+
+- id: metadata:context_iris_absolute
+  description: Namespace IRIs declared in @context are absolute.
+  specSection: "CAWG Metadata 1.1 §Assertion definition"
+  warnIfMatched: true
+  expression: |
+    _metadata()[?type(value) == "object" && length(_relativeContextIris(@)) > `0`].ref
+  reportText:
+    'true':
+      en: "All @context namespace IRIs are absolute"
+    'false':
+      en: "Metadata assertions declaring relative namespace IRIs in @context: {{matches}}"
+
+- id: metadata:validation_no_failures
+  description: The validator reported no failure codes for any metadata assertion. The c2pa.metadata field restrictions (C2PA Appendix B) do not apply to cawg.metadata.
+  specSection: "CAWG Metadata 1.1 §Assertion definition"
+  failIfMatched: true
+  expression: |
+    _metadata()[?length(_statusFor(@, results.failure || `[]`)) > `0`].ref
+  reportText:
+    'true':
+      en: "No failure codes reported for metadata assertions"
+    'false':
+      en: "Metadata assertions with failure codes: {{matches}}"

@@ -148,3 +148,72 @@ expressions:
   # Identity entries whose decoded signature is an ICA verifiable credential.
   _icaCredentials: |
     _identities()[?value.signature.credentialType == "IdentityClaimsAggregation"]
+
+  # ---------------------------------------------------------------------------
+  # CAWG metadata assertion helpers
+  # ---------------------------------------------------------------------------
+
+  # Prefixes and terms defined by a JSON-LD @context (object, or array of
+  # objects and URLs). Returns null when the context is only remote URLs,
+  # because those terms cannot be known without fetching the context.
+  _contextKeys: |
+    if(type($args[0]) == "object", keys($args[0]),
+      if(type($args[0]) == "array" && length($args[0][?type(@) == "object"]) > `0`,
+        map($args[0][?type(@) == "object"], &keys(@))[],
+        null()))
+
+  # Namespace IRIs declared in a JSON-LD @context (string values, or @id of
+  # expanded term definitions).
+  _contextIris: |
+    if(type($args[0]) == "object",
+      map(values($args[0]), &if(type(@) == "object", @.'@id', @))[?type(@) == "string"],
+      if(type($args[0]) == "array",
+        map($args[0][?type(@) == "object"], &_contextIris(@))[],
+        `[]`))
+
+  # Labels of the assertions referenced by identity assertions in a manifest.
+  # (json-formula does not apply [1] per element after [*], so map() is used.)
+  _identityReferencedLabels: |
+    _refLabelsOf(map(entries($args[0].assertions)[?startsWith(@[0], "cawg.identity")], &@[1]))
+
+  _refLabelsOf: |
+    map($args[0][*].signer_payload.referenced_assertions[] || `[]`, &_labelFromUrl(url))
+
+  # One entry per cawg.metadata* assertion in a manifest.
+  _manifestMetadata: |
+    entries($args[0].assertions)[?startsWith(@[0], "cawg.metadata")].{
+      ref: $args[0].label & "/" & @[0],
+      label: @[0],
+      manifest: $args[0].label,
+      value: @[1],
+      gatheredLabels: map($args[0].'claim.v2'.gathered_assertions || `[]`, &_labelFromUrl(url)),
+      identityRefLabels: _identityReferencedLabels($args[0]),
+      results: $args[0].validationResults
+    }
+
+  # Every metadata assertion in the manifest store.
+  _metadata: |
+    manifests[*]._manifestMetadata(@)[]
+
+  # Top-level fields of a metadata value ($args[0]) that JSON-LD cannot expand
+  # with its context ($args[1]): no prefix or term defined in @context and not
+  # an absolute http(s) IRI. Returns [] when the context is remote-only.
+  _undefinedTerms: |
+    if(_contextKeys($args[1]) == null, `[]`,
+      keys($args[0])[?!startsWith(@, "@") &&
+        !startsWith(@, "http://") && !startsWith(@, "https://") &&
+        !contains(_contextKeys($args[1]), @) &&
+        !(contains(@, ":") && contains(_contextKeys($args[1]), split(@, ":")[0]))])
+
+  # Namespace IRIs in a metadata entry's @context that are not absolute.
+  _relativeContextIris: |
+    _contextIris($args[0].value.'@context')[?!contains(@, "://") && !startsWith(@, "urn:")]
+
+  # Top-level string values (including inside arrays) that start with "urn:"
+  # but are not of the form urn:<nid>:<nss>.
+  _malformedUrns: |
+    _malformedUrnsIn(values($args[0].value)[])
+
+  _malformedUrnsIn: |
+    $args[0][?type(@) == "string" && startsWith(@, "urn:") &&
+      (length(split(@, ":")) < `3` || split(@, ":")[1] == "" || split(@, ":")[2] == "")]
