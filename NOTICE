@@ -1,4 +1,4 @@
-CAWG Conformance
+CAWG Test Suite (cawg-test-suite)
 
 Test assets under fixtures/assets/ and tools/crjson-gen/cawg_test_settings.toml
 are copied from the c2pa-rs project (https://github.com/contentauth/c2pa-rs),

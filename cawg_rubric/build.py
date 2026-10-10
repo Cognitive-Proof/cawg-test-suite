@@ -139,7 +139,7 @@ def assemble_rubric(target_filename, name, version, files, all_globals):
     metadata = {
         "rubric_metadata": {
             "name": name,
-            "issuer": "CAWG Conformance",
+            "issuer": "CAWG Test Suite",
             "date": "2026-10-10T00:00:00Z",
             "version": version,
             "language": "en",

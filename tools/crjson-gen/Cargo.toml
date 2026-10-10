@@ -3,7 +3,7 @@ name = "crjson-gen"
 version = "0.1.0"
 edition = "2021"
 publish = false
-description = "Generate crJSON fixtures for the CAWG conformance suite"
+description = "Generate crJSON fixtures for cawg-test-suite"
 
 # Not part of any workspace.
 [workspace]

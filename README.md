@@ -1,4 +1,4 @@
-# CAWG Conformance
+# cawg-test-suite
 
 Test code and examples for checking implementations against the
 [Creator Assertions Working Group](https://cawg.io/) specifications.

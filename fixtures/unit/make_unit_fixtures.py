@@ -68,7 +68,7 @@ def base(sig_type="cawg.x509.cose"):
         success.insert(0, status("cawg.ica.credential_valid"))
     return {
         "@context": {"@vocab": "https://contentcredentials.org/crjson"},
-        "jsonGenerator": {"name": "cawg-conformance unit fixture", "version": "0.1.0"},
+        "jsonGenerator": {"name": "cawg-test-suite unit fixture", "version": "0.1.0"},
         "manifests": [{
             "label": MANIFEST,
             "assertions": {

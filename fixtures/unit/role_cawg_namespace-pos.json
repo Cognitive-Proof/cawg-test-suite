@@ -3,7 +3,7 @@
     "@vocab": "https://contentcredentials.org/crjson"
   },
   "jsonGenerator": {
-    "name": "cawg-conformance unit fixture",
+    "name": "cawg-test-suite unit fixture",
     "version": "0.1.0"
   },
   "manifests": [
