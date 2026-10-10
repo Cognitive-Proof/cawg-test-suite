@@ -1,0 +1,43 @@
+# Validator conformance cases for CAWG Training and Data Mining Assertion 1.1.
+#
+# The specification defines no status codes, and how a consumer treats each
+# `use` value is out of scope for a validator. These cases check that valid
+# training and data mining assertions (including custom entry keys and
+# constrained entries) never cause a C2PA Manifest to fail validation, and that
+# an identity assertion attesting to one validates. Keys are described in
+# identity-1.3-cases.yml.
+#
+# The invalid assets in fixtures/assets/training-mining/ (invalid_use_value,
+# undefined_cawg_key, missing_entries, constraints_info_spelling,
+# legacy_c2pa_label) exercise the generator rubric. The specification doesn't
+# say whether validators should report them, so they have no validator case.
+
+spec: "CAWG Training and Data Mining Assertion 1.1 (https://cawg.io/training-and-data-mining/1.1/)"
+subject: manifest
+
+cases:
+  - id: tdm_all_entries
+    asset: training-mining/all_entries.jpg
+    description: All four predefined entries, in created_assertions.
+    spec_section: "§Overview"
+    forbid_any_failure: true
+
+  - id: tdm_custom_key
+    asset: training-mining/custom_key.jpg
+    description: A custom entry key (com.example.ai_fine_tuning) alongside a predefined one.
+    spec_section: "§Overview"
+    forbid_any_failure: true
+
+  - id: tdm_constrained_identity_attested
+    asset: training-mining/constrained_identity_attested.jpg
+    description: A constrained entry with constraint_info, gathered and referenced by a CAWG X.509 identity assertion.
+    spec_section: "§Overview"
+    forbid_any_failure: true
+
+  - id: tdm_identity_attests
+    asset: training-mining/constrained_identity_attested.jpg
+    subject: identity
+    description: The identity assertion that references the training and data mining assertion validates.
+    spec_section: "Identity 1.3 §7.2"
+    expect_any: [cawg.identity.well-formed, cawg.identity.trusted]
+    forbid_failure_prefixes: [cawg.]

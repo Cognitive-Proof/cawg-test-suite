@@ -144,5 +144,49 @@
   "metadata:validation_no_failures": {
     "outcome": "true",
     "matches": []
+  },
+  "training-mining:assertion_label": {
+    "outcome": "true",
+    "matches": []
+  },
+  "training-mining:cawg_keys_defined": {
+    "outcome": "true",
+    "matches": []
+  },
+  "training-mining:constraint_info_wellformed": {
+    "outcome": "true",
+    "matches": []
+  },
+  "training-mining:constraints_info_spelling": {
+    "outcome": "true",
+    "matches": []
+  },
+  "training-mining:custom_keys_label_syntax": {
+    "outcome": "true",
+    "matches": []
+  },
+  "training-mining:entries_nonempty": {
+    "outcome": "true",
+    "matches": []
+  },
+  "training-mining:entries_present": {
+    "outcome": "true",
+    "matches": []
+  },
+  "training-mining:legacy_c2pa_names": {
+    "outcome": "true",
+    "matches": []
+  },
+  "training-mining:tdm_assertion_present": {
+    "outcome": "false",
+    "matches": []
+  },
+  "training-mining:use_values_valid": {
+    "outcome": "true",
+    "matches": []
+  },
+  "training-mining:validation_no_failures": {
+    "outcome": "true",
+    "matches": []
   }
 }

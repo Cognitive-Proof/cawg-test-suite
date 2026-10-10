@@ -1,6 +1,10 @@
-//! Build signed test assets for the CAWG metadata assertion.
+//! Build signed test assets for CAWG assertions that c2pa-rs can write directly
+//! (metadata, training and data mining).
 //!
-//! Usage: make-assets <out-dir>
+//! Usage: make-assets <assets-dir> [group]
+//!
+//! Each recipe belongs to a group and is written to `<assets-dir>/<group>/`.
+//! Pass a group (`metadata`, `training-mining`) to rebuild only that group.
 //!
 //! Each recipe signs `source/no_manifest.jpg` with the c2pa-rs test
 //! certificates in `signing_settings.toml`. Recipes with `identity: true` also
@@ -23,6 +27,7 @@ const SETTINGS: &str = include_str!("../../signing_settings.toml");
 const SOURCE: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/source/no_manifest.jpg");
 
 struct Recipe {
+    group: &'static str,
     name: &'static str,
     identity: bool,
     references: &'static [&'static str],
@@ -85,39 +90,114 @@ fn media_identifiers() -> Value {
     })
 }
 
+/// A cawg.training-mining assertion (CBOR, which is the c2pa-rs default kind).
+fn training_mining(created: bool, data: Value) -> Value {
+    json!({ "label": "cawg.training-mining", "created": created, "data": data })
+}
+
+fn tdm_all_entries() -> Value {
+    json!({ "entries": {
+        "cawg.data_mining": { "use": "allowed" },
+        "cawg.ai_inference": { "use": "allowed" },
+        "cawg.ai_generative_training": { "use": "notAllowed" },
+        "cawg.ai_training": { "use": "notAllowed" }
+    }})
+}
+
+fn tdm_constrained() -> Value {
+    json!({ "entries": {
+        "cawg.ai_generative_training": { "use": "notAllowed" },
+        "cawg.data_mining": {
+            "use": "constrained",
+            "constraint_info": "https://example.com/policies/data-mining"
+        }
+    }})
+}
+
+fn training_mining_recipes() -> Vec<Recipe> {
+    let tdm = |name, identity, references, assertions| Recipe {
+        group: "training-mining",
+        name,
+        identity,
+        references,
+        assertions,
+    };
+    vec![
+        tdm("all_entries", false, &[], json!([training_mining(true, tdm_all_entries())])),
+        tdm("constrained_identity_attested", true, &["cawg.training-mining"],
+            json!([training_mining(false, tdm_constrained())])),
+        tdm("custom_key", false, &[], json!([training_mining(true, json!({ "entries": {
+            "cawg.ai_training": { "use": "allowed" },
+            "com.example.ai_fine_tuning": { "use": "notAllowed" }
+        }}))])),
+        tdm("invalid_use_value", false, &[], json!([training_mining(true, json!({ "entries": {
+            "cawg.ai_training": { "use": "sometimes" }
+        }}))])),
+        tdm("undefined_cawg_key", false, &[], json!([training_mining(true, json!({ "entries": {
+            "cawg.ai_fine_tuning": { "use": "notAllowed" }
+        }}))])),
+        tdm("missing_entries", false, &[], json!([training_mining(true, json!({
+            "cawg.ai_training": { "use": "notAllowed" },
+            "cawg.ai_generative_training": { "use": "notAllowed" }
+        }))])),
+        tdm("constraints_info_spelling", false, &[], json!([training_mining(true, json!({ "entries": {
+            "cawg.data_mining": { "use": "constrained", "constraints_info": "Contact the rights holder" }
+        }}))])),
+        tdm("legacy_c2pa_label", false, &[], json!([{
+            "label": "c2pa.training-mining",
+            "data": { "entries": {
+                "c2pa.ai_training": { "use": "notAllowed" },
+                "c2pa.ai_generative_training": { "use": "notAllowed" }
+            }}
+        }])),
+    ]
+}
+
 fn recipes() -> Vec<Recipe> {
+    let mut all = metadata_recipes();
+    all.extend(training_mining_recipes());
+    all
+}
+
+fn metadata_recipes() -> Vec<Recipe> {
     vec![
         Recipe {
+            group: "metadata",
             name: "created",
             identity: false,
             references: &[],
             assertions: json!([metadata(true, spec_image_example())]),
         },
         Recipe {
+            group: "metadata",
             name: "outside_c2pa_allowlist",
             identity: false,
             references: &[],
             assertions: json!([metadata(true, outside_allowlist())]),
         },
         Recipe {
+            group: "metadata",
             name: "gathered_with_identity",
             identity: true,
             references: &["cawg.metadata"],
             assertions: json!([metadata(false, outside_allowlist())]),
         },
         Recipe {
+            group: "metadata",
             name: "gathered_without_identity",
             identity: false,
             references: &[],
             assertions: json!([metadata(false, outside_allowlist())]),
         },
         Recipe {
+            group: "metadata",
             name: "media_identifiers",
             identity: true,
             references: &["cawg.metadata"],
             assertions: json!([metadata(false, media_identifiers())]),
         },
         Recipe {
+            group: "metadata",
             name: "multiple_instances",
             identity: false,
             references: &[],
@@ -127,6 +207,7 @@ fn recipes() -> Vec<Recipe> {
             ]),
         },
         Recipe {
+            group: "metadata",
             name: "undefined_prefix",
             identity: false,
             references: &[],
@@ -161,14 +242,19 @@ fn settings_for(recipe: &Recipe) -> String {
 
 fn main() -> ExitCode {
     let Some(out_dir) = std::env::args().nth(1).map(PathBuf::from) else {
-        eprintln!("usage: make-assets <out-dir>");
+        eprintln!("usage: make-assets <assets-dir> [group]");
         return ExitCode::FAILURE;
     };
-    fs::create_dir_all(&out_dir).expect("create output dir");
+    let only_group = std::env::args().nth(2);
 
     let mut failed = false;
     for recipe in recipes() {
-        let dest = out_dir.join(format!("{}.jpg", recipe.name));
+        if only_group.as_deref().is_some_and(|g| g != recipe.group) {
+            continue;
+        }
+        let group_dir = out_dir.join(recipe.group);
+        fs::create_dir_all(&group_dir).expect("create output dir");
+        let dest = group_dir.join(format!("{}.jpg", recipe.name));
         let _ = fs::remove_file(&dest);
         let definition = json!({
             "claim_generator_info": [{ "name": "cawg-test-suite make-assets", "version": "0.1.0" }],

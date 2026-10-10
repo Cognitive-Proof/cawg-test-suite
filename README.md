@@ -9,6 +9,7 @@ Specifications covered:
 | --- | --- | --- |
 | [Identity Assertion 1.3](https://cawg.io/identity/1.3/): X.509 (`cawg.x509.cose`) and identity claims aggregation (`cawg.identity_claims_aggregation`) | [`cawg-identity-1.3.rubric.yml`](rubrics/cawg-identity-1.3.rubric.yml) | [`identity-1.3-cases.yml`](validator_tests/identity-1.3-cases.yml) |
 | [Metadata Assertion 1.1](https://cawg.io/metadata/1.1/), plus 1.2-draft recommendations as warnings | [`cawg-metadata-1.1.rubric.yml`](rubrics/cawg-metadata-1.1.rubric.yml) | [`metadata-1.1-cases.yml`](validator_tests/metadata-1.1-cases.yml) |
+| [Training and Data Mining Assertion 1.1](https://cawg.io/training-and-data-mining/1.1/) | [`cawg-training-mining-1.1.rubric.yml`](rubrics/cawg-training-mining-1.1.rubric.yml) | [`training-mining-1.1-cases.yml`](validator_tests/training-mining-1.1-cases.yml) |
 
 Program documents (policy, process, governance) live elsewhere. This repo holds
 only what is needed to run tests. Open items are tracked in [TODO.md](TODO.md).
@@ -39,6 +40,7 @@ Produce crJSON for the asset with any C2PA validator, then:
 ```bash
 .venv/bin/python -m cawg_rubric.evaluator rubrics/cawg-identity-1.3.rubric.yml my-asset.crjson.json
 .venv/bin/python -m cawg_rubric.evaluator rubrics/cawg-metadata-1.1.rubric.yml my-asset.crjson.json
+.venv/bin/python -m cawg_rubric.evaluator rubrics/cawg-training-mining-1.1.rubric.yml my-asset.crjson.json
 ```
 
 The report groups every statement under `true`, `false` or `warning`. The exit
@@ -69,10 +71,10 @@ validator_tests/
   baselines/            known failures of reference validators
 fixtures/
   assets/               signed test JPGs (see NOTICE)
-    metadata/           built by tools/crjson-gen make-assets
+    metadata/, training-mining/   built by tools/crjson-gen make-assets
   crjson/               crJSON for each asset from c2pa-rs, plus rubric snapshots (*.rubric.json)
   unit/<spec>/          hand-built crJSON, one passing and one failing file per rubric statement
-tools/crjson-gen/       Rust tools: crjson-gen (assets -> crJSON) and make-assets (signs metadata assets)
+tools/crjson-gen/       Rust tools: crjson-gen (assets -> crJSON) and make-assets (signs metadata / TDM assets)
 tests/                  pytest suites
 ```
 
@@ -143,6 +145,33 @@ Not covered:
 - **Remote `@context` documents.** These aren't fetched.
 - **Vocabulary choice.** The 1.2 draft recommends established namespaces such as Dublin Core; that's a judgement call, not a check.
 
+## Rubric coverage (Training and Data Mining Assertion 1.1)
+
+Statement IDs are `training-mining:<name>`. The spec has no numbered sections, so references use
+section names.
+
+| Statement | Spec | Checks |
+| --- | --- | --- |
+| `tdm_assertion_present` | Assertion definition | At least one `cawg.training-mining` assertion exists |
+| `assertion_label` | Overview | Label is `cawg.training-mining` or `cawg.training-mining__N` |
+| `entries_present` | Schema and example | The assertion is a map containing an `entries` map. The 1.0 CDDL omitted `entries`, and 1.1 says it SHOULD be used; this suite follows the 1.1 CDDL and treats it as required |
+| `entries_nonempty` | Overview | `entries` has one or more entries |
+| `use_values_valid` | Overview; Schema | Every entry's `use` is `allowed`, `notAllowed` or `constrained` |
+| `constraint_info_wellformed` | Schema | `constraint_info`, if present, is a non-empty string |
+| `cawg_keys_defined` | Overview | `cawg.*` entry keys are the four defined ones; the prefix is reserved |
+| `custom_keys_label_syntax` | Overview; C2PA Namespacing | Custom keys are entity-specific labels: two or more components matching `[a-zA-Z0-9][a-zA-Z0-9_-]*` |
+| `constraints_info_spelling` (warn) | Overview vs Schema | No entry uses `constraints_info`, the prose spelling of `constraint_info` |
+| `legacy_c2pa_names` (warn) | Overview (notice to implementers) | No C2PA 1.x `c2pa.training-mining` label or `c2pa.*` entry keys |
+| `validation_no_failures` | Assertion definition | The validator reported no failure codes for the assertion |
+
+Not covered:
+- **Consumer behaviour.** Treating `constrained` as `notAllowed` can't be checked from crJSON.
+- **IANA TLD check.** Whether a custom key's first component is a valid IANA top-level domain isn't checked.
+- **String length.** The `max-tstr-length` bound on `constraint_info` isn't checked.
+
+Both real-world Adobe ICA assets carry a legacy `c2pa.training-mining` assertion alongside
+`cawg.training-mining`, so they get the `legacy_c2pa_names` warning.
+
 ## Validator cases
 
 Each case names an asset and the codes that must, or must not, appear for it.
@@ -165,10 +194,15 @@ a failure:
   identifiers must all validate.
 - An identity assertion that attests to the metadata must validate.
 
+[`training-mining-1.1-cases.yml`](validator_tests/training-mining-1.1-cases.yml) has 4 cases. The
+spec defines no status codes either, so these check that valid assertions never cause a failure:
+all four keys, a custom key, a constrained entry, and identity attestation. The invalid
+training-mining assets exist only for the generator rubric.
+
 ### c2pa-rs 0.91.2 baseline
 
-The crJSON in `fixtures/crjson/` comes from c2pa-rs 0.91.2. It passes 33 of 41
-cases, including all 8 metadata cases. The 8 failures are all identity cases, listed with reasons in
+The crJSON in `fixtures/crjson/` comes from c2pa-rs 0.91.2. It passes 37 of 45
+cases, including all metadata and training-mining cases. The 8 failures are all identity cases, listed with reasons in
 [`baselines/c2pa-rs-0.91.2.yml`](validator_tests/baselines/c2pa-rs-0.91.2.yml):
 - `cawg.identity.cbor.invalid` is not reported for malformed CBOR.
 - `cawg.identity.well-formed` is reported alongside `cawg.identity.*` failures (5 cases).
@@ -189,11 +223,12 @@ UPDATE_SNAPSHOTS=1 ./run_tests.sh tests/test_rubric_fixtures.py
 
 Then update `validator_tests/baselines/` if the reference validator's results changed.
 
-The metadata assets are signed by `make-assets` with the c2pa-rs test certificates, offline.
-Signatures and IDs change on every run, so only re-run it when a recipe changes:
+The metadata and training-mining assets are signed by `make-assets` with the c2pa-rs test
+certificates, offline. Signatures and IDs change on every run, so only rebuild a group when one of
+its recipes changes:
 
 ```bash
-cargo run --release --manifest-path tools/crjson-gen/Cargo.toml --bin make-assets -- fixtures/assets/metadata
+cargo run --release --manifest-path tools/crjson-gen/Cargo.toml --bin make-assets -- fixtures/assets training-mining
 ```
 
 c2pa-rs refuses to sign a metadata assertion without `@context`, so that case only has a hand-built unit fixture.
@@ -242,3 +277,16 @@ Checked against decentralized-identity/cawg-metadata-assertion at `64069e0` (1.2
 
 - The media industry identifier example isn't valid JSON: it has trailing commas after the `@context`
   entry and after `dc:type`. Fix proposed in decentralized-identity/cawg-metadata-assertion#14.
+
+### Training and data mining assertion
+
+Checked against decentralized-identity/cawg-training-and-data-mining-assertion at `e203ac5` (1.1 ratified).
+Fixes for all three issues are proposed in decentralized-identity/cawg-training-and-data-mining-assertion#11:
+
+- **The CDDL rejects every assertion.** `training-mining-map` refers to `$training-mining-entries-map`
+  and `$training-mining-map-entry`, but those rules are defined without the `$`. An undefined socket
+  matches nothing.
+  - With the `cddl` 0.10.7 validator, the spec's own example and the assertion c2pa-rs writes both fail.
+  - With the two `$` signs removed, both pass.
+- **The CBOR diagnostic example doesn't parse.** The `entries` map has no `{ }` around it.
+- **Field name mismatch.** The prose says `constraints_info`, while the CDDL and example use `constraint_info`.

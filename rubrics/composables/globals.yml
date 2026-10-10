@@ -61,6 +61,22 @@ variables:
     "cawg.crypto_wallet": "address"
     "cawg.web_site": "uri"
 
+  # CAWG Training and Data Mining 1.1: predefined entry keys and use values.
+  "$tdm_defined_keys":
+    - "cawg.data_mining"
+    - "cawg.ai_inference"
+    - "cawg.ai_generative_training"
+    - "cawg.ai_training"
+
+  "$tdm_use_values":
+    - "allowed"
+    - "notAllowed"
+    - "constrained"
+
+  # C2PA §Namespacing: entity-component = 1(DIGIT / ALPHA) *(DIGIT / ALPHA / "-" / "_")
+  "$label_alnum": ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z", "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z", "0", "1", "2", "3", "4", "5", "6", "7", "8", "9"]
+  "$label_chars": ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z", "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z", "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "-", "_"]
+
 expressions:
   # Base label of an assertion (drops a "__N" instance suffix).
   _baseLabel: |
@@ -217,3 +233,49 @@ expressions:
   _malformedUrnsIn: |
     $args[0][?type(@) == "string" && startsWith(@, "urn:") &&
       (length(split(@, ":")) < `3` || split(@, ":")[1] == "" || split(@, ":")[2] == "")]
+
+  # ---------------------------------------------------------------------------
+  # CAWG training and data mining assertion helpers
+  # ---------------------------------------------------------------------------
+
+  # One entry per cawg.training-mining* assertion in a manifest.
+  _manifestTdm: |
+    entries($args[0].assertions)[?startsWith(@[0], "cawg.training-mining")].{
+      ref: $args[0].label & "/" & @[0],
+      label: @[0],
+      manifest: $args[0].label,
+      value: @[1],
+      results: $args[0].validationResults
+    }
+
+  # Every training and data mining assertion in the manifest store.
+  _tdm: |
+    manifests[*]._manifestTdm(@)[]
+
+  # [key, value] pairs of a TDM entry's `entries` map ([] when it is not a map).
+  _tdmEntries: |
+    if(type($args[0].value.entries) == "object", entries($args[0].value.entries), `[]`)
+
+  # Keys of a TDM entry's `entries` map.
+  _tdmKeys: |
+    map(_tdmEntries($args[0]), &@[0])
+
+  # Values of a TDM entry's `entries` map.
+  _tdmValues: |
+    map(_tdmEntries($args[0]), &@[1])
+
+  # True if a string is a valid C2PA entity-specific label: two or more
+  # period-separated components, each [a-zA-Z0-9][a-zA-Z0-9_-]*.
+  _isEntityLabel: |
+    length(split($args[0], ".")) >= `2` && length(split($args[0], ".")[?!_isLabelComponent(@)]) == `0`
+
+  _isLabelComponent: |
+    length($args[0]) > `0` && contains($label_alnum, left($args[0], 1)) &&
+      length(split($args[0], "")[?!contains($label_chars, @)]) == `0`
+
+  # Labels of legacy C2PA 1.x training-mining assertions in the store.
+  _legacyTdmLabels: |
+    manifests[*]._manifestLegacyTdm(@)[]
+
+  _manifestLegacyTdm: |
+    map(keys($args[0].assertions)[?startsWith(@, "c2pa.training-mining")], &($args[0].label & "/" & @))

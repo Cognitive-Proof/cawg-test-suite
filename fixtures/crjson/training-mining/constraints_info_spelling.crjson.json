@@ -1,0 +1,149 @@
+{
+  "@context": {
+    "@vocab": "https://c2pa.org/crjson",
+    "extras": "https://c2pa.org/crjson/extras"
+  },
+  "manifests": [
+    {
+      "label": "urn:c2pa:e92737bf-8f73-4966-b788-1ba33309669f",
+      "isUpdateManifest": false,
+      "isCompressedManifest": false,
+      "assertions": {
+        "cawg.training-mining": {
+          "entries": {
+            "cawg.data_mining": {
+              "constraints_info": "Contact the rights holder",
+              "use": "constrained"
+            }
+          }
+        },
+        "c2pa.actions.v2": {
+          "actions": [
+            {
+              "action": "c2pa.created",
+              "digitalSourceType": "http://c2pa.org/digitalsourcetype/empty"
+            }
+          ]
+        },
+        "c2pa.hash.data": {
+          "exclusions": [
+            {
+              "start": 2,
+              "length": 6353
+            }
+          ],
+          "name": "jumbf manifest",
+          "alg": "sha256",
+          "hash": "b64'msOVygT8nTSKz2+Bkg9eiU0zY0HD92TKhsNU7sb3wtY='",
+          "pad": "b64'AAAAAAAAAAAA'"
+        }
+      },
+      "claim.v2": {
+        "instanceID": "xmp.iid:c12ed5c0-79c4-4830-88c7-cc76d7502a4c",
+        "signature": "self#jumbf=/c2pa/urn:c2pa:e92737bf-8f73-4966-b788-1ba33309669f/c2pa.signature",
+        "claim_generator_info": {
+          "name": "cawg-test-suite make-assets",
+          "version": "0.1.0",
+          "org.contentauth.c2pa_rs": "0.91.2"
+        },
+        "alg": "sha256",
+        "dc:title": "constraints_info_spelling.jpg",
+        "redacted_assertions": [],
+        "created_assertions": [
+          {
+            "url": "self#jumbf=c2pa.assertions/cawg.training-mining",
+            "hash": "b64'CLKAIv03lvVAg/8wtm1gVMFIW9S6+5zVMVw7iZccGiA='"
+          },
+          {
+            "url": "self#jumbf=c2pa.assertions/c2pa.actions.v2",
+            "hash": "b64'0ohWY6GFLmxA4TFbtUfBrysJkLH+f3RIfta+nZRv1gA='"
+          },
+          {
+            "url": "self#jumbf=c2pa.assertions/c2pa.hash.data",
+            "hash": "b64'xyabPVb3ppZTcztLMDqeNh1B92Ap/rXGLemU3gQaSpE='"
+          }
+        ],
+        "gathered_assertions": []
+      },
+      "signature": {
+        "algorithm": "ps256",
+        "certificateInfo": {
+          "serialNumber": "7e3e629adccfe7d99710135b5a48056972df8199",
+          "issuer": {
+            "C": "US",
+            "ST": "CA",
+            "L": "Somewhere",
+            "O": "C2PA Test Intermediate Root CA",
+            "OU": "FOR TESTING_ONLY",
+            "CN": "Intermediate CA"
+          },
+          "subject": {
+            "C": "US",
+            "ST": "CA",
+            "L": "Somewhere",
+            "O": "C2PA Test Signing Cert",
+            "OU": "FOR TESTING_ONLY",
+            "CN": "C2PA Signer"
+          },
+          "validity": {
+            "notBefore": "2022-06-10T18:46:28+00:00",
+            "notAfter": "2030-08-26T18:46:28+00:00"
+          }
+        }
+      },
+      "validationResults": {
+        "success": [
+          {
+            "code": "signingCredential.trusted",
+            "url": "self#jumbf=/c2pa/urn:c2pa:e92737bf-8f73-4966-b788-1ba33309669f/c2pa.signature",
+            "explanation": "signing certificate trusted, found in [https://cawg.io/test_cert_trust_list] trust anchors"
+          },
+          {
+            "code": "claimSignature.insideValidity",
+            "url": "self#jumbf=/c2pa/urn:c2pa:e92737bf-8f73-4966-b788-1ba33309669f/c2pa.signature",
+            "explanation": "claim signature valid"
+          },
+          {
+            "code": "claimSignature.validated",
+            "url": "self#jumbf=/c2pa/urn:c2pa:e92737bf-8f73-4966-b788-1ba33309669f/c2pa.signature",
+            "explanation": "claim signature valid"
+          },
+          {
+            "code": "assertion.hashedURI.match",
+            "url": "self#jumbf=/c2pa/urn:c2pa:e92737bf-8f73-4966-b788-1ba33309669f/c2pa.assertions/cawg.training-mining",
+            "explanation": "hashed uri matched: self#jumbf=c2pa.assertions/cawg.training-mining"
+          },
+          {
+            "code": "assertion.hashedURI.match",
+            "url": "self#jumbf=/c2pa/urn:c2pa:e92737bf-8f73-4966-b788-1ba33309669f/c2pa.assertions/c2pa.actions.v2",
+            "explanation": "hashed uri matched: self#jumbf=c2pa.assertions/c2pa.actions.v2"
+          },
+          {
+            "code": "assertion.hashedURI.match",
+            "url": "self#jumbf=/c2pa/urn:c2pa:e92737bf-8f73-4966-b788-1ba33309669f/c2pa.assertions/c2pa.hash.data",
+            "explanation": "hashed uri matched: self#jumbf=c2pa.assertions/c2pa.hash.data"
+          },
+          {
+            "code": "assertion.dataHash.match",
+            "url": "self#jumbf=/c2pa/urn:c2pa:e92737bf-8f73-4966-b788-1ba33309669f/c2pa.assertions/c2pa.hash.data",
+            "explanation": "data hash valid"
+          }
+        ],
+        "informational": [
+          {
+            "code": "signingCredential.ocsp.skipped",
+            "url": "self#jumbf=/c2pa/urn:c2pa:e92737bf-8f73-4966-b788-1ba33309669f/c2pa.signature",
+            "explanation": "OCSP fetching skipped"
+          }
+        ],
+        "failure": [],
+        "specVersion": "2.3.0",
+        "validationTime": "2026-10-10T22:23:38.487841+00:00"
+      }
+    }
+  ],
+  "jsonGenerator": {
+    "name": "c2pa-rs",
+    "version": "0.91.2"
+  }
+}

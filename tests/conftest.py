@@ -10,4 +10,5 @@ FIXTURES = os.path.join(REPO_ROOT, "fixtures")
 RUBRICS = {
     "identity": os.path.join(REPO_ROOT, "rubrics", "cawg-identity-1.3.rubric.yml"),
     "metadata": os.path.join(REPO_ROOT, "rubrics", "cawg-metadata-1.1.rubric.yml"),
+    "training-mining": os.path.join(REPO_ROOT, "rubrics", "cawg-training-mining-1.1.rubric.yml"),
 }

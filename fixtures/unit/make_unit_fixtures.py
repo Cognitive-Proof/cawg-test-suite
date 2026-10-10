@@ -338,6 +338,89 @@ METADATA_CASES = {
 }
 
 
+H_TDM = "b64'dHJhaW5pbmdtaW5pbmd0cmFpbmluZ21pbmluZ3RyYWk='"
+
+TDM_VALUE = {
+    "entries": {
+        "cawg.ai_training": {"use": "allowed"},
+        "cawg.ai_generative_training": {"use": "notAllowed"},
+        "cawg.data_mining": {"use": "constrained",
+                             "constraint_info": "https://example.com/policies/data-mining"},
+    }
+}
+
+
+def tbase():
+    """crJSON with one cawg.training-mining assertion in created_assertions."""
+    doc = base()
+    manifest = doc["manifests"][0]
+    manifest["assertions"]["cawg.training-mining"] = copy.deepcopy(TDM_VALUE)
+    manifest["claim.v2"]["created_assertions"].insert(0, ref("cawg.training-mining", H_TDM))
+    return doc
+
+
+def td(doc, label="cawg.training-mining"):
+    return doc["manifests"][0]["assertions"][label]
+
+
+def te(doc):
+    return td(doc)["entries"]
+
+
+def tm(fn):
+    doc = tbase()
+    result = fn(doc)
+    return result if result is not None else doc
+
+
+def rename_tdm(doc, new_label):
+    manifest = doc["manifests"][0]
+    manifest["assertions"][new_label] = manifest["assertions"].pop("cawg.training-mining")
+    for entry in manifest["claim.v2"]["created_assertions"]:
+        entry["url"] = entry["url"].replace("/cawg.training-mining", "/" + new_label)
+
+
+TDM_CASES = {
+    "tdm_assertion_present": (
+        tbase(),
+        base()),
+    "assertion_label": (
+        tm(lambda d: rename_tdm(d, "cawg.training-mining__1")),
+        tm(lambda d: rename_tdm(d, "cawg.training-mining.v2"))),
+    "entries_present": (
+        tbase(),
+        tm(lambda d: d["manifests"][0]["assertions"].update(
+            {"cawg.training-mining": copy.deepcopy(TDM_VALUE["entries"])}))),
+    "entries_nonempty": (
+        tbase(),
+        tm(lambda d: td(d).update(entries={}))),
+    "use_values_valid": (
+        tbase(),
+        tm(lambda d: te(d)["cawg.ai_training"].update(use="maybe"))),
+    "constraint_info_wellformed": (
+        tbase(),
+        tm(lambda d: te(d)["cawg.data_mining"].update(constraint_info=""))),
+    "cawg_keys_defined": (
+        tm(lambda d: te(d).update({"cawg.ai_inference": {"use": "allowed"}})),
+        tm(lambda d: te(d).update({"cawg.ai_fine_tuning": {"use": "notAllowed"}}))),
+    "custom_keys_label_syntax": (
+        tm(lambda d: te(d).update({"com.example.ai_fine-tuning": {"use": "notAllowed"},
+                                   "org.example2.v2": {"use": "allowed"}})),
+        tm(lambda d: te(d).update({"fine tuning": {"use": "notAllowed"}}))),
+    "constraints_info_spelling": (
+        tbase(),
+        tm(lambda d: te(d)["cawg.data_mining"].update(constraints_info="Contact the rights holder"))),
+    "legacy_c2pa_names": (
+        tbase(),
+        tm(lambda d: d["manifests"][0]["assertions"].update({"c2pa.training-mining": {
+            "entries": {"c2pa.ai_training": {"use": "allowed"}}}}))),
+    "validation_no_failures": (
+        tbase(),
+        tm(lambda d: d["manifests"][0]["validationResults"]["failure"].append(
+            status("assertion.cbor.invalid", "cawg.training-mining")))),
+}
+
+
 def write_cases(category, cases):
     out_dir = os.path.join(HERE, category)
     os.makedirs(out_dir, exist_ok=True)
@@ -355,6 +438,7 @@ def write_cases(category, cases):
 def main():
     write_cases("identity", IDENTITY_CASES)
     write_cases("metadata", METADATA_CASES)
+    write_cases("training-mining", TDM_CASES)
 
 
 if __name__ == "__main__":

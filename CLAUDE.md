@@ -4,8 +4,8 @@ Guidance for Claude Code when working in this repository.
 
 ## What this repo is
 
-Conformance test code and examples for CAWG specifications: the Identity Assertion 1.3 and
-the Metadata Assertion 1.1 (with 1.2-draft recommendations as warnings). There are no program
+Conformance test code and examples for CAWG specifications: Identity Assertion 1.3, Metadata
+Assertion 1.1 (with 1.2-draft recommendations as warnings), and Training and Data Mining 1.1. There are no program
 or policy documents here.
 
 - Rubrics (`rubrics/`) check generator output (crJSON) with YAML + json-formula, in the same
@@ -23,7 +23,7 @@ or policy documents here.
 .venv/bin/python validator_tests/check_validator.py <crjson-dir> [--baseline ...]
 .venv/bin/python fixtures/unit/make_unit_fixtures.py
 cargo run --release --manifest-path tools/crjson-gen/Cargo.toml -- fixtures/assets fixtures/crjson
-cargo run --release --manifest-path tools/crjson-gen/Cargo.toml --bin make-assets -- fixtures/assets/metadata
+cargo run --release --manifest-path tools/crjson-gen/Cargo.toml --bin make-assets -- fixtures/assets [group]
 UPDATE_SNAPSHOTS=1 ./run_tests.sh tests/test_rubric_fixtures.py
 ```
 
@@ -34,7 +34,7 @@ UPDATE_SNAPSHOTS=1 ./run_tests.sh tests/test_rubric_fixtures.py
 
 - Never hand-edit `rubrics/*.rubric.yml`, `fixtures/unit/*.json` or `fixtures/crjson/`. They are
   generated, and CI checks the first two are up to date.
-- Statement IDs are `<spec>:<snake_case>` (`identity:`, `metadata:`), and the prefix must match the
+- Statement IDs are `<spec>:<snake_case>` (`identity:`, `metadata:`, `training-mining:`), and the prefix must match the
   rubric's category in `tests/conftest.py`. Every statement has `specSection` and
   `reportText` (`true` and `false` keys only; the schema allows nothing else). Statements return the
   offending `ref` values (`<manifest label>/<assertion label>`) with `failIfMatched` or `warnIfMatched`.

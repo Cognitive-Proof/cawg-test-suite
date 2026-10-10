@@ -38,6 +38,13 @@ RECIPES = [
             "metadata-1.2-draft.yml",
         ],
     },
+    {
+        "target": "cawg-training-mining-1.1.rubric.yml",
+        "name": "CAWG Training and Data Mining Assertion 1.1 Rubric",
+        "files": [
+            "training-mining-1.1.yml",
+        ],
+    },
 ]
 
 

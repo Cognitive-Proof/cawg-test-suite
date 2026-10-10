@@ -22,11 +22,22 @@ def test_case_assets_exist():
     assert not missing
 
 
+# Assets that exist only to exercise generator rubrics; the spec says nothing
+# about how validators should report them.
+RUBRIC_ONLY_ASSETS = {
+    "training-mining/invalid_use_value.jpg",
+    "training-mining/undefined_cawg_key.jpg",
+    "training-mining/missing_entries.jpg",
+    "training-mining/constraints_info_spelling.jpg",
+    "training-mining/legacy_c2pa_label.jpg",
+}
+
+
 def test_every_asset_has_a_case():
     assets_dir = os.path.join(FIXTURES, "assets")
     on_disk = {os.path.relpath(os.path.join(d, f), assets_dir)
                for d, _, files in os.walk(assets_dir) for f in files if not f.startswith(".")}
-    assert on_disk == {c["asset"] for c in _cases()}
+    assert on_disk - RUBRIC_ONLY_ASSETS == {c["asset"] for c in _cases()}
 
 
 def test_c2pa_rs_baseline_matches():
@@ -46,7 +57,8 @@ def test_consistency_rule_flags_success_with_failure():
 
 def test_case_files_found():
     names = {os.path.basename(p) for p in check_validator.DEFAULT_CASES}
-    assert {"identity-1.3-cases.yml", "metadata-1.1-cases.yml"} <= names
+    assert {"identity-1.3-cases.yml", "metadata-1.1-cases.yml",
+            "training-mining-1.1-cases.yml"} <= names
 
 
 def test_forbid_any_failure_on_manifest_subject():
