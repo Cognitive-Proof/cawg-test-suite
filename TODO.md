@@ -27,6 +27,14 @@ These are deviations found by the validator cases; they're listed in `validator_
 - [ ] `cawg.identity.well-formed` is reported alongside `cawg.identity.*` failures (5 cases).
 - [ ] `cawg.ica.invalid_issuer` is reported where the spec (and c2pa-rs's own test) expects `cawg.ica.did_unsupported_method`.
 - [ ] `cawg.ica.untrusted_issuer` is reported as informational, but the spec classifies it as a failure.
+- [ ] Identity references into an ingredient claim are reported as `cawg.identity.assertion.mismatch`. §7.1 step 2 allows them (`identity/references_ingredient_assertion` from the generator branch). Because of this, `hard_binding_incorrect` is never reached either.
+- [ ] ICA: empty `verifiedIdentities` and a verified identity without `provider.name` are reported as `cawg.ica.invalid_verifiable_credential`. §8.1.5 requires `cawg.ica.verified_identities.missing` / `.invalid`.
+- [ ] ICA: a `cawg.crypto_wallet` entry without `address`, and an unsupported `credentialStatus` method, both pass as `cawg.ica.credential_valid`. Expected: `verified_identities.invalid` and `revocation.unsupported`.
+- [ ] c2pa-rs's own `ica_example_identities()` (`sdk/src/identity/tests/fixtures/claim_aggregation/ica_credential_example.rs`) copies the spec's crypto_wallet example without `address`. All bundled `ica_validation/*.jpg` fixtures inherit it.
+- [ ] Interim trust model: certificate-policy OIDs are not enforced. A mailbox-validated certificate chained to a configured anchor is reported `cawg.x509.credential.trusted` (`x509_interim_mailbox_policy`).
+- [ ] `cawg.identity.well-formed` is also reported alongside X.509 rejections (`cawg.x509.signature.outside_validity`, `cawg.x509.credential.untrusted`).
+- [ ] With two identity assertions, both sets of statuses use url `.../cawg.identity`; `cawg.identity__1` gets none of its own (`identity_multiple_assertions`).
+- [ ] `cawg.x509.algorithm.unsupported` is reported with url `Cose_Sign1` instead of the assertion label (§7.2).
 - [ ] crJSON inconsistencies:
   - `pad1` is written as a byte array.
   - Hashes in `referenced_assertions` keep a trailing `'` that claim hashes don't.
@@ -36,12 +44,14 @@ These are deviations found by the validator cases; they're listed in `validator_
 
 ## Coverage gaps in this suite
 
-- [ ] Identity: no validator fixtures yet for the X.509 failure paths:
-  - `cawg.x509.algorithm.unsupported`, `credential.untrusted`, `signature.mismatch`
-  - time stamp codes
-  - OCSP/revocation, `cawg.identity.credential_revoked`
-  - the interim trust model (EKU, certificate policy OIDs, 31 March 2027 cutoff)
-- [ ] Identity: ICA revocation codes (`cawg.ica.revocation.*`, `credential.revoked`) and the `verified_identities.*` validator codes have no fixtures.
+- [ ] Extend the c2pa-rs generator branch (`cawg/conformance-fixtures`) with the remaining gaps below, then re-import (README "Generated identity fixtures").
+
+- [ ] Identity: still no fixtures (even on the generator branch) for:
+  - X.509 time stamp codes
+  - OCSP/revocation, `cawg.identity.credential_revoked`; c2pa-rs has OCSP test material in `sdk/tests/fixtures/crypto/ocsp/`
+  - ICA revocation beyond `revocation.unsupported`
+  - the interim trust model's 31 March 2027 cutoff
+- [ ] The interim trust fixtures (`x509/interim_*`) are only meaningful until 2027-03-31 unless they carry a trusted time stamp.
 - [ ] Identity: most c2pa-rs ICA test assets show a certificate rather than the VC in crJSON, so the ICA rubric checks only run on the hand-built fixtures and the two real-world assets.
 - [ ] Metadata: the "JSON content type box" requirement can't be checked from crJSON (it doesn't record JSON vs CBOR).
 - [ ] Metadata: remote `@context` documents are not fetched. `terms_defined_in_context` skips them.
@@ -62,5 +72,6 @@ These are deviations found by the validator cases; they're listed in `validator_
 
 - [x] Identity Assertion 1.3 rubric, validator cases and fixtures.
 - [x] Metadata Assertion 1.1 rubric (plus 1.2-draft warnings), validator cases, and signed assets via `make-assets`.
+- [x] c2pa-rs generator branch `cawg/conformance-fixtures` (pushed to mrappard/c2pa-rs-text-support). 16 identity / X.509 / ICA fixtures imported, with 16 validator cases and the minted CAWG trust anchor.
 - [x] Training and Data Mining Assertion 1.1 rubric, validator cases, and signed assets (`make-assets training-mining`).
 - [x] Repo published as Cognitive-Proof/cawg-test-suite and renamed from "CAWG Conformance".

@@ -33,3 +33,41 @@ known_failures:
     reason: >-
       Reports cawg.ica.untrusted_issuer as informational; the §8.1.5 status table
       classifies it as a failure code.
+
+  # --- Cases from the c2pa-rs generator branch (cawg/conformance-fixtures) ---
+  - id: identity_references_ingredient_assertion
+    reason: >-
+      A reference that exactly matches an assertion in the ingredient's claim is
+      reported as cawg.identity.assertion.mismatch (§7.1 step 2 allows ingredient
+      claims), and cawg.identity.well-formed is reported alongside it.
+  - id: identity_hard_binding_incorrect
+    reason: >-
+      Never reaches the hard-binding check: the ingredient hard-binding reference is
+      first reported as cawg.identity.assertion.mismatch (see above).
+  - id: x509_algorithm_unsupported
+    reason: >-
+      cawg.x509.algorithm.unsupported is reported with url "Cose_Sign1" rather than
+      the identity assertion's label (§7.2).
+  - id: x509_outside_validity
+    reason: Reports cawg.identity.well-formed alongside cawg.x509.signature.outside_validity.
+  - id: x509_untrusted_chain
+    reason: Reports cawg.identity.well-formed alongside cawg.x509.credential.untrusted.
+  - id: x509_interim_mailbox_policy
+    reason: >-
+      Trusts a certificate with the mailbox-validated S/MIME policy, which the §8.2.4
+      interim trust model excludes; certificate policy OIDs appear not to be checked.
+  - id: ica_credential_visible_valid
+    reason: Reports cawg.ica.untrusted_issuer as informational (same as ica_valid_untrusted_issuer).
+  - id: ica_verified_identities_empty
+    reason: Reports cawg.ica.invalid_verifiable_credential instead of cawg.ica.verified_identities.missing.
+  - id: ica_verified_identity_missing_provider_name
+    reason: Reports cawg.ica.invalid_verifiable_credential instead of cawg.ica.verified_identities.invalid.
+  - id: ica_crypto_wallet_missing_address
+    reason: Accepts a cawg.crypto_wallet verified identity without address.
+  - id: ica_revocation_unsupported
+    reason: Does not report cawg.ica.revocation.unsupported for an unknown credentialStatus method.
+  - id: identity_multiple_assertions
+    reason: >-
+      Statuses for the second identity assertion are reported with url
+      .../cawg.identity instead of .../cawg.identity__1, so cawg.identity__1 has
+      no status of its own.

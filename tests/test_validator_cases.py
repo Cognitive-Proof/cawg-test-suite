@@ -52,7 +52,7 @@ def test_consistency_rule_flags_success_with_failure():
         "success": [{"code": "cawg.identity.well-formed", "url": url}],
         "failure": [{"code": "cawg.identity.pad.invalid", "url": url}]}}]}
     problems = check_validator.check_case({"expect_failure": ["cawg.identity.pad.invalid"]}, crjson)
-    assert problems == ["cawg.identity.well-formed reported alongside a cawg.identity.* failure"]
+    assert problems == ["cawg.identity.well-formed reported alongside a cawg.* failure"]
 
 
 def test_case_files_found():
@@ -68,3 +68,14 @@ def test_forbid_any_failure_on_manifest_subject():
     case = {"subject": "manifest", "forbid_any_failure": True}
     assert check_validator.check_case(case, crjson) == [
         "unexpected failure code(s) assertion.metadata.disallowed"]
+
+
+def test_per_assertion_requires_status_for_each_label():
+    base = "self#jumbf=/c2pa/urn:c2pa:x/c2pa.assertions/"
+    crjson = {"manifests": [{
+        "assertions": {"cawg.identity": {}, "cawg.identity__1": {}},
+        "validationResults": {"success": [
+            {"code": "cawg.identity.well-formed", "url": base + "cawg.identity"}]}}]}
+    case = {"expect_any": ["cawg.identity.well-formed"], "per_assertion": True}
+    assert check_validator.check_case(case, crjson) == [
+        "no cawg.identity.well-formed status for cawg.identity__1"]

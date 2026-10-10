@@ -1,0 +1,239 @@
+{
+  "generator": "c2pa-rs identity::tests::conformance_fixtures",
+  "fixtures": [
+    {
+      "asset": "identity/multiple_identity_assertions.jpg",
+      "description": "Two valid X.509 identity assertions (cawg.identity and cawg.identity__1) with different roles.",
+      "spec": "Identity 1.3 §5.1, §7.2",
+      "expect_failure": [],
+      "expect_any": [
+        "cawg.identity.well-formed",
+        "cawg.identity.trusted"
+      ],
+      "requires": null,
+      "c2pa_rs_codes": [
+        "success:cawg.identity.well-formed",
+        "success:cawg.x509.credential.trusted",
+        "success:cawg.x509.signature.validated"
+      ]
+    },
+    {
+      "asset": "identity/custom_role.jpg",
+      "description": "Valid X.509 identity assertion with a recommended role and an entity-specific custom role.",
+      "spec": "Identity 1.3 §5.1.2",
+      "expect_failure": [],
+      "expect_any": [
+        "cawg.identity.well-formed",
+        "cawg.identity.trusted"
+      ],
+      "requires": null,
+      "c2pa_rs_codes": [
+        "success:cawg.identity.well-formed",
+        "success:cawg.x509.credential.trusted",
+        "success:cawg.x509.signature.validated"
+      ]
+    },
+    {
+      "asset": "identity/references_ingredient_assertion.jpg",
+      "description": "Valid identity assertion that also references an assertion in the ingredient's claim, which §5.1.1 allows.",
+      "spec": "Identity 1.3 §5.1.1, §7.1 step 2",
+      "expect_failure": [],
+      "expect_any": [
+        "cawg.identity.well-formed",
+        "cawg.identity.trusted"
+      ],
+      "requires": null,
+      "c2pa_rs_codes": [
+        "failure:cawg.identity.assertion.mismatch",
+        "success:cawg.identity.well-formed",
+        "success:cawg.x509.credential.trusted",
+        "success:cawg.x509.signature.validated"
+      ]
+    },
+    {
+      "asset": "identity/hard_binding_incorrect.jpg",
+      "description": "References the ingredient manifest's hard binding instead of its own claim's. The reference resolves, so the defect is the hard binding, not a mismatch.",
+      "spec": "Identity 1.3 §5.1.1, §7.1 step 4, §7.2",
+      "expect_failure": [
+        "cawg.identity.hard_binding_incorrect"
+      ],
+      "expect_any": [],
+      "requires": null,
+      "c2pa_rs_codes": [
+        "failure:cawg.identity.assertion.mismatch",
+        "success:cawg.identity.well-formed",
+        "success:cawg.x509.credential.trusted",
+        "success:cawg.x509.signature.validated"
+      ]
+    },
+    {
+      "asset": "x509/signature_mismatch.jpg",
+      "description": "X.509 identity signature with one bit flipped, so it does not verify.",
+      "spec": "Identity 1.3 §8.2.2",
+      "expect_failure": [
+        "cawg.x509.signature.mismatch"
+      ],
+      "expect_any": [],
+      "requires": null,
+      "c2pa_rs_codes": [
+        "failure:cawg.x509.signature.mismatch",
+        "success:cawg.x509.credential.trusted"
+      ]
+    },
+    {
+      "asset": "x509/algorithm_unsupported.jpg",
+      "description": "X.509 identity signature whose protected alg header is RS256, which C2PA §13.2 does not allow.",
+      "spec": "Identity 1.3 §8.2.2",
+      "expect_failure": [
+        "cawg.x509.algorithm.unsupported"
+      ],
+      "expect_any": [],
+      "requires": null,
+      "c2pa_rs_codes": [
+        "failure:cawg.x509.algorithm.unsupported"
+      ]
+    },
+    {
+      "asset": "x509/outside_validity.jpg",
+      "description": "X.509 identity signature from a certificate that expired in 2022, with no time stamp.",
+      "spec": "Identity 1.3 §8.2.2",
+      "expect_failure": [
+        "cawg.x509.signature.outside_validity"
+      ],
+      "expect_any": [],
+      "requires": null,
+      "c2pa_rs_codes": [
+        "failure:cawg.x509.credential.untrusted",
+        "failure:cawg.x509.signature.outside_validity",
+        "success:cawg.identity.well-formed",
+        "success:cawg.x509.signature.validated"
+      ]
+    },
+    {
+      "asset": "x509/untrusted_chain.jpg",
+      "description": "X.509 identity certificate that chains to a root no validator trusts.",
+      "spec": "Identity 1.3 §8.2.2",
+      "expect_failure": [
+        "cawg.x509.credential.untrusted"
+      ],
+      "expect_any": [],
+      "requires": null,
+      "c2pa_rs_codes": [
+        "failure:cawg.x509.credential.untrusted",
+        "success:cawg.identity.well-formed",
+        "success:cawg.x509.signature.validated"
+      ]
+    },
+    {
+      "asset": "x509/interim_trusted.jpg",
+      "description": "Meets the interim trust model: id-kp-emailProtection plus the S/MIME organization-validated multipurpose policy, chained to x509/trust_anchor.pem.",
+      "spec": "Identity 1.3 §8.2.4 (interim, valid until 31 March 2027)",
+      "expect_failure": [],
+      "expect_any": [
+        "cawg.x509.credential.trusted"
+      ],
+      "requires": "x509/trust_anchor.pem configured as a CAWG trust anchor; validation on or before 2027-03-31",
+      "c2pa_rs_codes": [
+        "failure:cawg.x509.credential.untrusted",
+        "success:cawg.identity.well-formed",
+        "success:cawg.x509.signature.validated"
+      ]
+    },
+    {
+      "asset": "x509/interim_mailbox_policy.jpg",
+      "description": "id-kp-emailProtection with the mailbox-validated policy, which the interim trust model excludes.",
+      "spec": "Identity 1.3 §8.2.4 (interim)",
+      "expect_failure": [
+        "cawg.x509.credential.untrusted"
+      ],
+      "expect_any": [],
+      "requires": "x509/trust_anchor.pem configured as a CAWG trust anchor; validation on or before 2027-03-31",
+      "c2pa_rs_codes": [
+        "failure:cawg.x509.credential.untrusted",
+        "success:cawg.identity.well-formed",
+        "success:cawg.x509.signature.validated"
+      ]
+    },
+    {
+      "asset": "x509/document_signing_eku.jpg",
+      "description": "id-kp-documentSigning EKU with no certificate policy. The spec says this EKU must be accepted, but it is unclear whether such a certificate counts as trusted.",
+      "spec": "Identity 1.3 §8.2.4",
+      "expect_failure": [],
+      "expect_any": [
+        "cawg.x509.credential.trusted",
+        "cawg.x509.credential.untrusted"
+      ],
+      "requires": "x509/trust_anchor.pem configured as a CAWG trust anchor",
+      "c2pa_rs_codes": [
+        "failure:cawg.x509.credential.untrusted",
+        "success:cawg.identity.well-formed",
+        "success:cawg.x509.signature.validated"
+      ]
+    },
+    {
+      "asset": "ica/credential_visible_valid.jpg",
+      "description": "Valid ICA credential with no x5chain header, so crJSON writers can show the verifiable credential.",
+      "spec": "Identity 1.3 §8.1",
+      "expect_failure": [],
+      "expect_any": [
+        "cawg.ica.credential_valid"
+      ],
+      "requires": "did:jwk issuer trusted (see c2pa-rs ICA_FIXTURE_JWK_ISSUER); otherwise cawg.ica.untrusted_issuer",
+      "c2pa_rs_codes": [
+        "success:cawg.ica.credential_valid"
+      ]
+    },
+    {
+      "asset": "ica/verified_identities_empty.jpg",
+      "description": "credentialSubject.verifiedIdentities is an empty array.",
+      "spec": "Identity 1.3 §8.1.2.5, §8.1.5",
+      "expect_failure": [
+        "cawg.ica.verified_identities.missing"
+      ],
+      "expect_any": [],
+      "requires": null,
+      "c2pa_rs_codes": [
+        "failure:cawg.ica.invalid_verifiable_credential"
+      ]
+    },
+    {
+      "asset": "ica/verified_identity_missing_provider_name.jpg",
+      "description": "A verified identity whose provider has no name.",
+      "spec": "Identity 1.3 §8.1.2.5, §8.1.5",
+      "expect_failure": [
+        "cawg.ica.verified_identities.invalid"
+      ],
+      "expect_any": [],
+      "requires": null,
+      "c2pa_rs_codes": [
+        "failure:cawg.ica.invalid_verifiable_credential"
+      ]
+    },
+    {
+      "asset": "ica/crypto_wallet_missing_address.jpg",
+      "description": "The CAWG specification's own example identities: a cawg.crypto_wallet entry with username and no address.",
+      "spec": "Identity 1.3 §8.1.2.5, §8.1.5",
+      "expect_failure": [
+        "cawg.ica.verified_identities.invalid"
+      ],
+      "expect_any": [],
+      "requires": null,
+      "c2pa_rs_codes": [
+        "success:cawg.ica.credential_valid"
+      ]
+    },
+    {
+      "asset": "ica/revocation_unsupported.jpg",
+      "description": "credentialStatus uses a status method no validator supports.",
+      "spec": "Identity 1.3 §8.1.5",
+      "expect_failure": [],
+      "expect_any": [
+        "cawg.ica.revocation.unsupported"
+      ],
+      "requires": null,
+      "c2pa_rs_codes": [
+        "success:cawg.ica.credential_valid"
+      ]
+    }
+  ]
+}

@@ -77,17 +77,31 @@ def check_case(case, crjson):
         if bad:
             problems.append(f"unexpected failure code(s) {', '.join(bad)}")
 
+    if case.get("per_assertion") and any_of:
+        # Each assertion of the subject type must carry one of expect_any under
+        # its own label (so multiple instances can be told apart).
+        pattern = SUBJECT_URLS[subject]
+        labels = {label for m in crjson.get("manifests", [])
+                  for label in (m.get("assertions") or {}) if pattern.search(label)}
+        for label in sorted(labels):
+            own = {c for entries in statuses.values() for u, c in entries
+                   if u == label or u.endswith("/" + label)}
+            if not own.intersection(any_of):
+                problems.append(f"no {' / '.join(any_of)} status for {label}")
+
     if case.get("forbid_any_failure") and codes["failure"]:
         problems.append(f"unexpected failure code(s) {', '.join(sorted(codes['failure']))}")
 
     if subject != "identity":
         return problems
 
-    # Consistency: no well-formed/trusted on an assertion with a cawg.identity.* failure.
-    failed_urls = {u for u, c in statuses["failure"] if c.startswith("cawg.identity.")}
+    # Consistency: no well-formed/trusted on an assertion that has a cawg.* failure.
+    # §7.2 defines those success codes as "validated"; §7.1, §8.1.5 and §8.2.2
+    # failures reject the assertion.
+    failed_urls = {u for u, c in statuses["failure"] if c.startswith("cawg.")}
     for url, code in statuses["success"]:
         if code in SUCCESS_CODES and url in failed_urls:
-            problems.append(f"{code} reported alongside a cawg.identity.* failure")
+            problems.append(f"{code} reported alongside a cawg.* failure")
             break
     return problems
 

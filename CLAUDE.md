@@ -27,6 +27,14 @@ cargo run --release --manifest-path tools/crjson-gen/Cargo.toml --bin make-asset
 UPDATE_SNAPSHOTS=1 ./run_tests.sh tests/test_rubric_fixtures.py
 ```
 
+## Generated identity fixtures
+
+`fixtures/assets/{identity,x509,ica}/` come from the c2pa-rs branch `cawg/conformance-fixtures`
+(local worktree `~/Documents/GitHub/c2pa-rs-cawg-fixtures`, pushed to mrappard/c2pa-rs-text-support).
+The X.509 trust-model cases depend on `tools/crjson-gen/generated_trust_anchor.pem` also being in
+the CAWG `trust_anchors` of `tools/crjson-gen/cawg_test_settings.toml`; the generator mints a new root
+on every run, so replace both together. See README "Generated identity fixtures".
+
 ## Conventions
 
 - `TODO.md` is the running list of open items (upstream PRs/issues, c2pa-rs deviations, coverage

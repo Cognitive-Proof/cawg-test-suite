@@ -1,0 +1,188 @@
+{
+  "identity:assertion_label": {
+    "outcome": "true",
+    "matches": []
+  },
+  "identity:exactly_one_hard_binding": {
+    "outcome": "true",
+    "matches": []
+  },
+  "identity:hard_binding_is_claims": {
+    "outcome": "true",
+    "matches": []
+  },
+  "identity:ica_algorithm_allowed": {
+    "outcome": "true",
+    "matches": []
+  },
+  "identity:ica_credential_visible": {
+    "outcome": "true",
+    "matches": []
+  },
+  "identity:ica_issuer_did": {
+    "outcome": "true",
+    "matches": []
+  },
+  "identity:ica_valid_from_present": {
+    "outcome": "true",
+    "matches": []
+  },
+  "identity:ica_verified_identities_nonempty": {
+    "outcome": "true",
+    "matches": []
+  },
+  "identity:ica_verified_identity_required_fields": {
+    "outcome": "true",
+    "matches": []
+  },
+  "identity:ica_verified_identity_type_fields": {
+    "outcome": "true",
+    "matches": []
+  },
+  "identity:identity_assertion_present": {
+    "outcome": "true",
+    "matches": []
+  },
+  "identity:no_duplicate_references": {
+    "outcome": "true",
+    "matches": []
+  },
+  "identity:no_removed_fields": {
+    "outcome": "true",
+    "matches": []
+  },
+  "identity:no_self_reference": {
+    "outcome": "true",
+    "matches": []
+  },
+  "identity:pads_zero": {
+    "outcome": "true",
+    "matches": []
+  },
+  "identity:referenced_assertions_in_own_claim": {
+    "outcome": "true",
+    "matches": []
+  },
+  "identity:referenced_assertions_nonempty": {
+    "outcome": "true",
+    "matches": []
+  },
+  "identity:referenced_assertions_resolve": {
+    "outcome": "true",
+    "matches": []
+  },
+  "identity:required_fields": {
+    "outcome": "true",
+    "matches": []
+  },
+  "identity:role_cawg_namespace": {
+    "outcome": "true",
+    "matches": []
+  },
+  "identity:role_wellformed": {
+    "outcome": "true",
+    "matches": []
+  },
+  "identity:sig_type_known": {
+    "outcome": "true",
+    "matches": []
+  },
+  "identity:validation_no_failures": {
+    "outcome": "true",
+    "matches": []
+  },
+  "identity:validation_status_reported": {
+    "outcome": "warning",
+    "matches": [
+      "urn:c2pa:a1068dc7-0f01-4981-b23f-bb58492d528c:test/cawg.identity__1"
+    ]
+  },
+  "identity:x509_algorithm_allowed": {
+    "outcome": "true",
+    "matches": []
+  },
+  "identity:x509_signature_decodable": {
+    "outcome": "true",
+    "matches": []
+  },
+  "metadata:assertion_label": {
+    "outcome": "true",
+    "matches": []
+  },
+  "metadata:context_iris_absolute": {
+    "outcome": "true",
+    "matches": []
+  },
+  "metadata:context_present": {
+    "outcome": "true",
+    "matches": []
+  },
+  "metadata:gathered_referenced_by_identity": {
+    "outcome": "true",
+    "matches": []
+  },
+  "metadata:json_ld_object": {
+    "outcome": "true",
+    "matches": []
+  },
+  "metadata:metadata_assertion_present": {
+    "outcome": "false",
+    "matches": []
+  },
+  "metadata:terms_defined_in_context": {
+    "outcome": "true",
+    "matches": []
+  },
+  "metadata:urn_values_wellformed": {
+    "outcome": "true",
+    "matches": []
+  },
+  "metadata:validation_no_failures": {
+    "outcome": "true",
+    "matches": []
+  },
+  "training-mining:assertion_label": {
+    "outcome": "true",
+    "matches": []
+  },
+  "training-mining:cawg_keys_defined": {
+    "outcome": "true",
+    "matches": []
+  },
+  "training-mining:constraint_info_wellformed": {
+    "outcome": "true",
+    "matches": []
+  },
+  "training-mining:constraints_info_spelling": {
+    "outcome": "true",
+    "matches": []
+  },
+  "training-mining:custom_keys_label_syntax": {
+    "outcome": "true",
+    "matches": []
+  },
+  "training-mining:entries_nonempty": {
+    "outcome": "true",
+    "matches": []
+  },
+  "training-mining:entries_present": {
+    "outcome": "true",
+    "matches": []
+  },
+  "training-mining:legacy_c2pa_names": {
+    "outcome": "true",
+    "matches": []
+  },
+  "training-mining:tdm_assertion_present": {
+    "outcome": "false",
+    "matches": []
+  },
+  "training-mining:use_values_valid": {
+    "outcome": "true",
+    "matches": []
+  },
+  "training-mining:validation_no_failures": {
+    "outcome": "true",
+    "matches": []
+  }
+}
