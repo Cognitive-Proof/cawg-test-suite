@@ -1,0 +1,150 @@
+rubric_metadata:
+  name: "CAWG Rubric Globals"
+  issuer: "CAWG Conformance"
+  date: "2026-10-10T00:00:00Z"
+  version: "0.1.0"
+  language: en
+
+# Shared variables and named expressions for the CAWG rubrics.
+#
+# Expressions are json-formula (https://opensource.adobe.com/json-formula/):
+#   - "text" is a string literal; 'field.name' quotes an identifier.
+#   - Arguments are passed as the global array $args (see cawg_rubric/evaluator.py).
+
+variables:
+  # CAWG Identity 1.3 §8: signature types defined by this version.
+  "$known_sig_types":
+    - "cawg.x509.cose"
+    - "cawg.identity_claims_aggregation"
+
+  # CAWG Identity 1.3 §5.1.2: recommended role values.
+  "$recommended_roles":
+    - "cawg.creator"
+    - "cawg.contributor"
+    - "cawg.editor"
+    - "cawg.producer"
+    - "cawg.publisher"
+    - "cawg.sponsor"
+    - "cawg.translator"
+
+  # Fields removed from signer_payload in 1.x that must be ignored (§5.1).
+  "$removed_signer_payload_fields":
+    - "expected_partial_claim"
+    - "expected_claim_generator"
+    - "expected_countersigners"
+
+  # C2PA 2.4 §15.12 hard-binding assertion labels (without __N suffix).
+  "$hard_binding_labels":
+    - "c2pa.hash.data"
+    - "c2pa.hash.boxes"
+    - "c2pa.hash.bmff"
+    - "c2pa.hash.bmff.v2"
+    - "c2pa.hash.bmff.v3"
+    - "c2pa.hash.collection.data"
+    - "c2pa.hash.multi-asset"
+
+  # C2PA 2.4 §13.2 signature algorithms, as named in crJSON `signature.algorithm`.
+  # (ICA §8.1.5 COSE alg labels -7, -35, -36, -37, -38, -39, -8 map to the same set.)
+  "$allowed_algorithms":
+    - "es256"
+    - "es384"
+    - "es512"
+    - "ps256"
+    - "ps384"
+    - "ps512"
+    - "ed25519"
+
+  # CAWG Identity 1.3 §8.1.2.5: verifiedIdentities types and the field each one requires.
+  "$vi_type_required_field":
+    "cawg.document_verification": "name"
+    "cawg.social_media": "username"
+    "cawg.crypto_wallet": "address"
+    "cawg.web_site": "uri"
+
+expressions:
+  # Base label of an assertion (drops a "__N" instance suffix).
+  _baseLabel: |
+    split($args[0], "__")[0]
+
+  # Assertion label from a JUMBF URI (relative or absolute).
+  _labelFromUrl: |
+    split($args[0], "/")[-1]
+
+  # Hash comparison key. crJSON writers differ on the closing quote of the
+  # b64'...' wrapper, so all quotes are stripped before comparing.
+  _hashKey: |
+    substitute($args[0] || "", "'", "")
+
+  # Lookup key for a hashed-uri-map: "<label>|<hash>".
+  _refKey: |
+    _labelFromUrl($args[0].url) & "|" & _hashKey($args[0].hash)
+
+  # Hashed URIs listed in a manifest's claim (claim v2 created + gathered, or claim v1 assertions).
+  _claimRefs: |
+    [$args[0].'claim.v2'.created_assertions || `[]`, $args[0].'claim.v2'.gathered_assertions || `[]`, $args[0].claim.assertions || `[]`][]
+
+  # One entry per cawg.identity* assertion in a manifest.
+  _manifestIdentities: |
+    entries($args[0].assertions)[?startsWith(@[0], "cawg.identity")].{
+      ref: $args[0].label & "/" & @[0],
+      label: @[0],
+      manifest: $args[0].label,
+      value: @[1],
+      claimRefKeys: map(_claimRefs($args[0]), &_refKey(@)),
+      results: $args[0].validationResults
+    }
+
+  # Every claim reference key in the manifest store (covers ingredient claims).
+  _storeClaimRefKeys: |
+    map(manifests[*]._claimRefs(@)[], &_refKey(@))
+
+  # Every identity assertion in the manifest store. Each entry carries
+  # storeRefKeys because named expressions cannot reach the crJSON root from
+  # inside a filter.
+  _identities: |
+    _withStoreRefKeys(manifests[*]._manifestIdentities(@)[], _storeClaimRefKeys())
+
+  _withStoreRefKeys: |
+    $args[0][*].merge(@, {storeRefKeys: $args[1]})
+
+  # Referenced assertions of an identity entry (empty array when absent).
+  _refs: |
+    $args[0].value.signer_payload.referenced_assertions || `[]`
+
+  # Hard-binding references of an identity entry.
+  _hardBindingRefs: |
+    _refs($args[0])[?contains($hard_binding_labels, _baseLabel(_labelFromUrl(url)))]
+
+  # References of an identity entry that are not in any claim in the store.
+  _unresolvedRefs: |
+    _refs($args[0])[?!contains($args[0].storeRefKeys, _refKey(@))]
+
+  # References of an identity entry that are not in its own claim.
+  _foreignRefs: |
+    _refs($args[0])[?!contains($args[0].claimRefKeys, _refKey(@))]
+
+  # Hard-binding references of an identity entry that are not in its own claim.
+  _foreignHardBindingRefs: |
+    _hardBindingRefs($args[0])[?!contains($args[0].claimRefKeys, _refKey(@))]
+
+  # True if an identity entry references its own label.
+  _isSelfReferencing: |
+    contains(map(_refs($args[0]), &_labelFromUrl(url)), $args[0].label)
+
+  # True if a pad value (byte array or b64'...' string) contains a non-zero byte.
+  # Zero bytes encode to "A" characters (plus "=" padding) in base64.
+  _padNonZero: |
+    if(type($args[0]) == "array",
+      length($args[0][?@ != `0`]) > 0,
+      if(type($args[0]) == "string",
+        substitute(substitute(substitute(substitute($args[0], "b64", ""), "'", ""), "A", ""), "=", "") != "",
+        false()))
+
+  # Validation status entries that point at an identity entry. §7.2 says url is the
+  # assertion label; validators may also use a JUMBF URI that ends in the label.
+  _statusFor: |
+    $args[1][?url == $args[0].label || (endsWith(url || "", "/" & $args[0].label) && contains(url || "", $args[0].manifest))]
+
+  # Identity entries whose decoded signature is an ICA verifiable credential.
+  _icaCredentials: |
+    _identities()[?value.signature.credentialType == "IdentityClaimsAggregation"]

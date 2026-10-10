@@ -1,0 +1,30 @@
+# CAWG Identity Assertion 1.3: validation status (§7.2).
+# Uses the validationResults the validator wrote into crJSON.
+include:
+  - globals.yml
+
+---
+
+- id: identity:validation_no_failures
+  description: The validator reported no cawg.* failure codes for any identity assertion.
+  specSection: "CAWG Identity 1.3 §7.2, §8.1.5, §8.2.2"
+  failIfMatched: true
+  expression: |
+    _identities()[?length(_statusFor(@, results.failure || `[]`)[?startsWith(code, "cawg.")]) > `0`].ref
+  reportText:
+    'true':
+      en: "No cawg.* failure codes reported for identity assertions"
+    'false':
+      en: "Identity assertions with cawg.* failure codes: {{matches}}"
+
+- id: identity:validation_status_reported
+  description: The validator reported cawg.identity.well-formed or cawg.identity.trusted for each identity assertion.
+  specSection: "CAWG Identity 1.3 §7.2"
+  warnIfMatched: true
+  expression: |
+    _identities()[?length(_statusFor(@, results.success || `[]`)[?code == "cawg.identity.well-formed" || code == "cawg.identity.trusted"]) == `0`].ref
+  reportText:
+    'true':
+      en: "Every identity assertion has a cawg.identity.well-formed or cawg.identity.trusted status"
+    'false':
+      en: "Identity assertions without a cawg.identity.well-formed or cawg.identity.trusted status: {{matches}}"

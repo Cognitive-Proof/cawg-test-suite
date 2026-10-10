@@ -1,0 +1,35 @@
+# Known failures of the reference validator used to generate fixtures/crjson/
+# (c2pa-rs 0.91.2, Reader::to_crjson_value with tools/crjson-gen/cawg_test_settings.toml).
+#
+# CI runs check_validator.py with this baseline. A case not listed here that
+# fails, or a listed case that passes, fails the build, so update this file
+# when fixtures are regenerated with a newer c2pa-rs.
+
+validator: c2pa-rs
+version: 0.91.2
+
+known_failures:
+  - id: cbor_invalid
+    reason: >-
+      No cawg.identity.cbor.invalid in crJSON validationResults. The identity
+      validator logs it through the direct IdentityAssertion API
+      (sdk/src/identity/tests/validation_method/stop_on_error.rs), but Reader
+      does not surface it.
+  - id: assertion_mismatch
+    reason: Reports cawg.identity.well-formed alongside cawg.identity.assertion.mismatch.
+  - id: assertion_duplicate
+    reason: Reports cawg.identity.well-formed alongside cawg.identity.assertion.duplicate.
+  - id: hard_binding_missing
+    reason: Reports cawg.identity.well-formed alongside cawg.identity.hard_binding_missing.
+  - id: pad1_invalid
+    reason: Reports cawg.identity.well-formed alongside cawg.identity.pad.invalid.
+  - id: pad2_invalid
+    reason: Reports cawg.identity.well-formed alongside cawg.identity.pad.invalid.
+  - id: ica_did_unsupported_method
+    reason: >-
+      Reports cawg.ica.invalid_issuer instead of cawg.ica.did_unsupported_method
+      (the c2pa-rs test for this fixture says the latter MUST be issued).
+  - id: ica_valid_untrusted_issuer
+    reason: >-
+      Reports cawg.ica.untrusted_issuer as informational; the §8.1.5 status table
+      classifies it as a failure code.

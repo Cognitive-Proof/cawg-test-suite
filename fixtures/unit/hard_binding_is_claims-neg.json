@@ -1,0 +1,141 @@
+{
+  "@context": {
+    "@vocab": "https://contentcredentials.org/crjson"
+  },
+  "jsonGenerator": {
+    "name": "cawg-conformance unit fixture",
+    "version": "0.1.0"
+  },
+  "manifests": [
+    {
+      "label": "urn:c2pa:00000000-0000-4000-8000-000000000001",
+      "assertions": {
+        "c2pa.hash.data": {
+          "alg": "sha256",
+          "hash": "b64'ZGF0YWhhc2hkYXRhaGFzaGRhdGFoYXNoZGF0YWhhc2g='",
+          "pad": "b64''"
+        },
+        "c2pa.actions.v2": {
+          "actions": [
+            {
+              "action": "c2pa.created"
+            }
+          ]
+        },
+        "cawg.identity": {
+          "signer_payload": {
+            "referenced_assertions": [
+              {
+                "url": "self#jumbf=c2pa.assertions/c2pa.actions.v2",
+                "hash": "b64'YWN0aW9uc2FjdGlvbnNhY3Rpb25zYWN0aW9uc2FjdGk='"
+              },
+              {
+                "url": "self#jumbf=/c2pa/urn:c2pa:00000000-0000-4000-8000-000000000002/c2pa.assertions/c2pa.hash.data",
+                "hash": "b64'aW5ncmVkaWVudGluZ3JlZGllbnRpbmdyZWRpZW50aW4='"
+              }
+            ],
+            "sig_type": "cawg.x509.cose",
+            "role": [
+              "cawg.creator"
+            ]
+          },
+          "signature": {
+            "algorithm": "es256",
+            "certificateInfo": {
+              "serialNumber": "01",
+              "issuer": {
+                "O": "Example CA",
+                "CN": "Example Issuing CA"
+              },
+              "subject": {
+                "O": "Example Org",
+                "CN": "Example Signer"
+              },
+              "validity": {
+                "notBefore": "2026-01-01T00:00:00+00:00",
+                "notAfter": "2027-01-01T00:00:00+00:00"
+              }
+            }
+          },
+          "pad1": "b64'AAAAAAAAAA=='",
+          "pad2": "b64''"
+        }
+      },
+      "claim.v2": {
+        "instanceID": "xmp:iid:00000000-0000-4000-8000-000000000003",
+        "claim_generator_info": {
+          "name": "unit fixture"
+        },
+        "alg": "sha256",
+        "signature": "self#jumbf=/c2pa/urn:c2pa:00000000-0000-4000-8000-000000000001/c2pa.signature",
+        "created_assertions": [
+          {
+            "url": "self#jumbf=c2pa.assertions/c2pa.actions.v2",
+            "hash": "b64'YWN0aW9uc2FjdGlvbnNhY3Rpb25zYWN0aW9uc2FjdGk='"
+          },
+          {
+            "url": "self#jumbf=c2pa.assertions/c2pa.hash.data",
+            "hash": "b64'ZGF0YWhhc2hkYXRhaGFzaGRhdGFoYXNoZGF0YWhhc2g='"
+          }
+        ],
+        "gathered_assertions": [
+          {
+            "url": "self#jumbf=c2pa.assertions/cawg.identity",
+            "hash": "b64'aWRlbnRpdHlpZGVudGl0eWlkZW50aXR5aWRlbnRpdHk='"
+          }
+        ]
+      },
+      "signature": {
+        "algorithm": "es256"
+      },
+      "validationResults": {
+        "success": [
+          {
+            "code": "cawg.identity.well-formed",
+            "url": "self#jumbf=/c2pa/urn:c2pa:00000000-0000-4000-8000-000000000001/c2pa.assertions/cawg.identity"
+          }
+        ],
+        "informational": [],
+        "failure": []
+      }
+    },
+    {
+      "label": "urn:c2pa:00000000-0000-4000-8000-000000000002",
+      "assertions": {
+        "c2pa.hash.data": {
+          "alg": "sha256",
+          "hash": "b64'aW5ncmVkaWVudGluZ3JlZGllbnRpbmdyZWRpZW50aW4='",
+          "pad": "b64''"
+        },
+        "c2pa.actions.v2": {
+          "actions": [
+            {
+              "action": "c2pa.created"
+            }
+          ]
+        }
+      },
+      "claim.v2": {
+        "created_assertions": [
+          {
+            "url": "self#jumbf=c2pa.assertions/c2pa.actions.v2",
+            "hash": "b64'aW5nYWN0aW9uc2luZ2FjdGlvbnNpbmdhY3Rpb25zaW4='"
+          },
+          {
+            "url": "self#jumbf=c2pa.assertions/c2pa.hash.data",
+            "hash": "b64'aW5ncmVkaWVudGluZ3JlZGllbnRpbmdyZWRpZW50aW4='"
+          }
+        ],
+        "gathered_assertions": []
+      },
+      "signature": {
+        "algorithm": "es256"
+      },
+      "validationResults": {
+        "success": [],
+        "informational": [],
+        "failure": []
+      }
+    }
+  ]
+}

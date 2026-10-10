@@ -1,0 +1,16 @@
+CAWG Conformance
+
+Test assets under fixtures/assets/ and tools/crjson-gen/cawg_test_settings.toml
+are copied from the c2pa-rs project (https://github.com/contentauth/c2pa-rs),
+commit ddf97429, and are used under its MIT / Apache-2.0 dual license:
+
+  fixtures/assets/C_with_CAWG_data.jpg          <- sdk/tests/fixtures/
+  fixtures/assets/validation_method/*.jpg       <- sdk/src/identity/tests/fixtures/validation_method/
+  fixtures/assets/claim_aggregation/**/*.jpg    <- sdk/src/identity/tests/fixtures/claim_aggregation/
+  tools/crjson-gen/cawg_test_settings.toml      <- c2pa_c_ffi/tests/fixtures/trust/
+
+Copyright 2022 Adobe. All rights reserved.
+
+cawg_rubric/ (evaluator, builder, rubric validator, rubric JSON schema) and
+tests/test_json_formula_features.py are adapted from the C2PA Conformance Task
+Force repository (c2pa-org/conformance, commit b6d5a1b).

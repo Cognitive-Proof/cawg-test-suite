@@ -1,0 +1,226 @@
+# Validator conformance cases for CAWG Identity Assertion 1.3.
+#
+# Each case names an asset under fixtures/assets/ and the status codes a
+# conforming validator must report for the identity assertion(s) in it.
+# Codes are matched against validationResults entries in the validator's crJSON
+# whose url is the identity assertion label (§7.2) or a JUMBF URI ending in it.
+#
+# Keys:
+#   expect_failure:     every listed code appears in validationResults.failure
+#   expect_success:     every listed code appears in validationResults.success
+#   expect_any:         at least one listed code appears (any category)
+#   forbid_failure_prefixes: no failure code starts with any listed prefix
+#   level:              "must" (default) or "should": the spec keyword behind the expectation
+#
+# Every case also checks consistency: a validator must not report
+# cawg.identity.well-formed or cawg.identity.trusted for an assertion that
+# also has a cawg.identity.* failure code (§7.2: those success codes mean the
+# assertion was validated).
+
+spec: "CAWG Identity Assertion 1.3 (https://cawg.io/identity/1.3/)"
+
+cases:
+  # --- Valid assertions -----------------------------------------------------
+  - id: x509_valid
+    asset: C_with_CAWG_data.jpg
+    description: Valid cawg.x509.cose identity assertion signed by a trusted test certificate.
+    spec_section: "§7.2, §8.2.2"
+    expect_any: [cawg.identity.well-formed, cawg.identity.trusted]
+    forbid_failure_prefixes: [cawg.]
+
+  - id: extra_field_ignored
+    asset: validation_method/extra_field.jpg
+    description: Extra fields in the identity assertion must not affect validation.
+    spec_section: "§7.1 step 1"
+    expect_any: [cawg.identity.well-formed, cawg.identity.trusted]
+    forbid_failure_prefixes: [cawg.]
+
+  # --- Identity assertion validation procedure (§7.1) -----------------------
+  - id: cbor_invalid
+    asset: validation_method/malformed_cbor.jpg
+    description: Assertion does not match the identity CDDL (signer_payload is missing).
+    spec_section: "§7.1 step 1, §7.2"
+    expect_failure: [cawg.identity.cbor.invalid]
+
+  - id: assertion_mismatch
+    asset: validation_method/extra_assertion_claim_v1.jpg
+    description: signer_payload references an assertion that is not in the claim.
+    spec_section: "§7.1 step 2, §7.2"
+    expect_failure: [cawg.identity.assertion.mismatch]
+
+  - id: assertion_duplicate
+    asset: validation_method/duplicate_assertion_reference.jpg
+    description: signer_payload references the same assertion twice.
+    spec_section: "§7.1 step 3, §7.2"
+    level: should
+    expect_failure: [cawg.identity.assertion.duplicate]
+
+  - id: hard_binding_missing
+    asset: validation_method/no_hard_binding.jpg
+    description: signer_payload does not reference the claim's hard binding.
+    spec_section: "§7.1 step 4, §7.2"
+    expect_failure: [cawg.identity.hard_binding_missing]
+
+  - id: sig_type_unknown
+    asset: validation_method/invalid_sig_type.jpg
+    description: sig_type is not a supported signature type.
+    spec_section: "§7.1 step 5, §7.2"
+    expect_failure: [cawg.identity.sig_type.unknown]
+
+  - id: pad1_invalid
+    asset: validation_method/pad1_invalid.jpg
+    description: pad1 contains a non-zero byte.
+    spec_section: "§7.1 step 7, §7.2"
+    expect_failure: [cawg.identity.pad.invalid]
+
+  - id: pad2_invalid
+    asset: validation_method/pad2_invalid.jpg
+    description: pad2 contains a non-zero byte.
+    spec_section: "§7.1 step 7, §7.2"
+    expect_failure: [cawg.identity.pad.invalid]
+
+  # --- Identity claims aggregation (§8.1.5) ---------------------------------
+  - id: ica_valid_untrusted_issuer
+    asset: claim_aggregation/ica_validation/success.jpg
+    description: Valid ICA credential from an issuer that is not on the validator's trust list.
+    spec_section: "§8.1.5"
+    expect_failure: [cawg.ica.untrusted_issuer]
+    forbid_failure_prefixes: [cawg.identity., cawg.ica.signature, cawg.ica.invalid, cawg.ica.signer_payload, cawg.ica.valid_]
+
+  - id: ica_adobe_connected_identities
+    asset: claim_aggregation/adobe_connected_identities.jpg
+    description: Real-world ICA credential (did:web issuer, cawg.social_media identity).
+    spec_section: "§8.1"
+    forbid_failure_prefixes: [cawg.identity., cawg.ica.signature, cawg.ica.invalid, cawg.ica.signer_payload, cawg.ica.valid_]
+
+  - id: ica_multiple_manifests
+    asset: claim_aggregation/ims_multiple_manifests.jpg
+    description: ICA identity assertion in an asset with an ingredient manifest.
+    spec_section: "§8.1"
+    forbid_failure_prefixes: [cawg.identity., cawg.ica.signature, cawg.ica.invalid, cawg.ica.signer_payload, cawg.ica.valid_]
+
+  - id: ica_invalid_cose_sign1
+    asset: claim_aggregation/ica_validation/invalid_cose_sign1.jpg
+    description: Signature is not a valid COSE_Sign1.
+    spec_section: "§8.1.5"
+    expect_failure: [cawg.ica.invalid_cose_sign1]
+
+  - id: ica_invalid_alg
+    asset: claim_aggregation/ica_validation/invalid_cose_sign_alg.jpg
+    description: COSE alg is not an allowed algorithm.
+    spec_section: "§8.1.5"
+    expect_failure: [cawg.ica.invalid_alg]
+
+  - id: ica_missing_alg
+    asset: claim_aggregation/ica_validation/missing_cose_sign_alg.jpg
+    description: COSE alg header is missing.
+    spec_section: "§8.1.5"
+    expect_failure: [cawg.ica.invalid_alg]
+
+  - id: ica_invalid_content_type
+    asset: claim_aggregation/ica_validation/invalid_content_type.jpg
+    description: Protected content type is not application/vc.
+    spec_section: "§8.1.5"
+    expect_failure: [cawg.ica.invalid_content_type]
+
+  - id: ica_invalid_content_type_assigned
+    asset: claim_aggregation/ica_validation/invalid_content_type_assigned.jpg
+    description: Protected content type is an assigned CoAP content format other than application/vc.
+    spec_section: "§8.1.5"
+    expect_failure: [cawg.ica.invalid_content_type]
+
+  - id: ica_missing_content_type
+    asset: claim_aggregation/ica_validation/missing_content_type.jpg
+    description: Protected content type header is missing.
+    spec_section: "§8.1.5"
+    expect_failure: [cawg.ica.invalid_content_type]
+
+  - id: ica_invalid_vc
+    asset: claim_aggregation/ica_validation/invalid_vc.jpg
+    description: COSE payload is not a valid verifiable credential.
+    spec_section: "§8.1.5"
+    expect_failure: [cawg.ica.invalid_verifiable_credential]
+
+  - id: ica_missing_vc
+    asset: claim_aggregation/ica_validation/missing_vc.jpg
+    description: COSE payload is missing.
+    spec_section: "§8.1.5"
+    expect_failure: [cawg.ica.invalid_verifiable_credential]
+
+  - id: ica_invalid_issuer
+    asset: claim_aggregation/ica_validation/invalid_issuer_did.jpg
+    description: Credential issuer is not a DID.
+    spec_section: "§8.1.5"
+    expect_failure: [cawg.ica.invalid_issuer]
+
+  - id: ica_did_unsupported_method
+    asset: claim_aggregation/ica_validation/unsupported_did_method.jpg
+    description: Issuer DID uses a method the validator does not support.
+    spec_section: "§8.1.5"
+    expect_failure: [cawg.ica.did_unsupported_method]
+
+  - id: ica_did_unavailable
+    asset: claim_aggregation/ica_validation/unresolvable_did.jpg
+    description: Issuer DID cannot be resolved.
+    spec_section: "§8.1.5"
+    expect_failure: [cawg.ica.did_unavailable]
+
+  - id: ica_invalid_did_document
+    asset: claim_aggregation/ica_validation/did_doc_without_assertion_method.jpg
+    description: DID document does not contain a usable verification method.
+    spec_section: "§8.1.5"
+    expect_failure: [cawg.ica.invalid_did_document]
+
+  - id: ica_signature_mismatch
+    asset: claim_aggregation/ica_validation/signature_mismatch.jpg
+    description: COSE signature does not verify against the issuer's key.
+    spec_section: "§8.1.5"
+    expect_failure: [cawg.ica.signature_mismatch]
+
+  - id: ica_signer_payload_mismatch
+    asset: claim_aggregation/ica_validation/signer_payload_mismatch.jpg
+    description: credentialSubject.c2paAsset does not match signer_payload.
+    spec_section: "§8.1.5"
+    expect_failure: [cawg.ica.signer_payload.mismatch]
+
+  - id: ica_time_stamp_valid
+    asset: claim_aggregation/ica_validation/valid_time_stamp.jpg
+    description: Valid RFC 3161 time stamp in sigTst2.
+    spec_section: "§8.1.5"
+    expect_success: [cawg.ica.time_stamp.validated]
+
+  - id: ica_time_stamp_invalid
+    asset: claim_aggregation/ica_validation/invalid_time_stamp.jpg
+    description: Time stamp in sigTst2 does not validate.
+    spec_section: "§8.1.5"
+    expect_failure: [cawg.ica.time_stamp.invalid]
+
+  - id: ica_valid_from_missing
+    asset: claim_aggregation/ica_validation/valid_from_missing.jpg
+    description: Credential has no validFrom/issuanceDate.
+    spec_section: "§8.1.5"
+    expect_failure: [cawg.ica.valid_from.missing]
+
+  - id: ica_valid_from_in_future
+    asset: claim_aggregation/ica_validation/valid_from_in_future.jpg
+    description: validFrom is later than the validation time.
+    spec_section: "§8.1.5"
+    expect_failure: [cawg.ica.valid_from.invalid]
+
+  - id: ica_valid_from_after_time_stamp
+    asset: claim_aggregation/ica_validation/valid_from_after_time_stamp.jpg
+    description: validFrom is later than the trusted time stamp.
+    spec_section: "§8.1.5"
+    expect_failure: [cawg.ica.valid_from.invalid]
+
+  - id: ica_valid_until_in_future
+    asset: claim_aggregation/ica_validation/valid_until_in_future.jpg
+    description: validUntil is in the future, so the credential is still valid.
+    spec_section: "§8.1.5"
+    forbid_failure_prefixes: [cawg.ica.valid_until]
+
+  - id: ica_valid_until_in_past
+    asset: claim_aggregation/ica_validation/valid_until_in_past.jpg
+    description: validUntil has passed.
+    spec_section: "§8.1.5"
+    expect_failure: [cawg.ica.valid_until.invalid]

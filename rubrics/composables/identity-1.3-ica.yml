@@ -1,0 +1,103 @@
+# CAWG Identity Assertion 1.3: identity claims aggregation credentials (§8.1).
+# Applies to identity assertions with sig_type "cawg.identity_claims_aggregation".
+#
+# crJSON exposes only part of the verifiable credential (issuer, validFrom,
+# validUntil, verifiedIdentities). @context, type, issuanceDate and
+# credentialSubject.c2paAsset are not in crJSON and cannot be checked here.
+include:
+  - globals.yml
+
+---
+
+- id: identity:ica_credential_visible
+  description: The ICA verifiable credential is exposed in crJSON. When it is not, the remaining ICA statements cannot check this assertion.
+  specSection: "CAWG Identity 1.3 §8.1.2"
+  warnIfMatched: true
+  expression: |
+    _identities()[?value.signer_payload.sig_type == "cawg.identity_claims_aggregation" &&
+      value.signature.credentialType != "IdentityClaimsAggregation"].ref
+  reportText:
+    'true':
+      en: "All ICA identity assertions expose their verifiable credential in crJSON"
+    'false':
+      en: "ICA identity assertions whose verifiable credential is not visible in crJSON (ICA checks skipped): {{matches}}"
+
+- id: identity:ica_algorithm_allowed
+  description: The ICA COSE signature uses an algorithm allowed by C2PA §13.2.
+  specSection: "CAWG Identity 1.3 §8.1.4, §8.1.5"
+  failIfMatched: true
+  expression: |
+    _icaCredentials()[?!contains($allowed_algorithms, value.signature.algorithm || "")].ref
+  reportText:
+    'true':
+      en: "All ICA signatures use an allowed algorithm"
+    'false':
+      en: "ICA identity assertions with a missing or disallowed algorithm (cawg.ica.invalid_alg): {{matches}}"
+
+- id: identity:ica_issuer_did
+  description: The ICA credential issuer is a DID.
+  specSection: "CAWG Identity 1.3 §8.1.4, §8.1.5"
+  failIfMatched: true
+  expression: |
+    _icaCredentials()[?!startsWith(value.signature.issuer.id || value.signature.issuer || "", "did:")].ref
+  reportText:
+    'true':
+      en: "All ICA credential issuers are DIDs"
+    'false':
+      en: "ICA identity assertions whose issuer is not a DID (cawg.ica.invalid_issuer): {{matches}}"
+
+- id: identity:ica_valid_from_present
+  description: The ICA credential has a validity start date (validFrom for VC 2.0, issuanceDate for VC 1.1).
+  specSection: "CAWG Identity 1.3 §8.1.2.4"
+  failIfMatched: true
+  expression: |
+    _icaCredentials()[?value.signature.validFrom == null && value.signature.issuanceDate == null].ref
+  reportText:
+    'true':
+      en: "All ICA credentials have a validity start date"
+    'false':
+      en: "ICA identity assertions missing validFrom/issuanceDate (cawg.ica.valid_from.missing): {{matches}}"
+
+- id: identity:ica_verified_identities_nonempty
+  description: credentialSubject.verifiedIdentities is a non-empty array.
+  specSection: "CAWG Identity 1.3 §8.1.2.5"
+  failIfMatched: true
+  expression: |
+    _icaCredentials()[?type(value.signature.verifiedIdentities) != "array" ||
+      length(value.signature.verifiedIdentities) == `0`].ref
+  reportText:
+    'true':
+      en: "All ICA credentials list at least one verified identity"
+    'false':
+      en: "ICA identity assertions with missing or empty verifiedIdentities (cawg.ica.verified_identities.missing): {{matches}}"
+
+- id: identity:ica_verified_identity_required_fields
+  description: Each verifiedIdentities entry has a non-empty type, a provider with a name, and verifiedAt.
+  specSection: "CAWG Identity 1.3 §8.1.2.5"
+  failIfMatched: true
+  expression: |
+    _icaCredentials()[?length((value.signature.verifiedIdentities || `[]`)[?
+      type(type) != "string" || type == "" ||
+      type(provider) != "object" || type(provider.name) != "string" || provider.name == "" ||
+      verifiedAt == null]) > `0`].ref
+  reportText:
+    'true':
+      en: "All verified identities have type, provider.name and verifiedAt"
+    'false':
+      en: "ICA identity assertions with verified identities missing type, provider.name or verifiedAt (cawg.ica.verified_identities.invalid): {{matches}}"
+
+- id: identity:ica_verified_identity_type_fields
+  description: Verified identities carry the field their type requires (name for cawg.document_verification, username for cawg.social_media, address for cawg.crypto_wallet, uri for cawg.web_site).
+  specSection: "CAWG Identity 1.3 §8.1.2.5"
+  failIfMatched: true
+  expression: |
+    _icaCredentials()[?length((value.signature.verifiedIdentities || `[]`)[?
+      (type == "cawg.document_verification" && (name == null || name == "")) ||
+      (type == "cawg.social_media" && (username == null || username == "")) ||
+      (type == "cawg.crypto_wallet" && (address == null || address == "")) ||
+      (type == "cawg.web_site" && (uri == null || uri == ""))]) > `0`].ref
+  reportText:
+    'true':
+      en: "All verified identities include the field required by their type"
+    'false':
+      en: "ICA identity assertions with verified identities missing a type-specific field (cawg.ica.verified_identities.invalid): {{matches}}"

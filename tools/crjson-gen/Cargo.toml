@@ -1,0 +1,15 @@
+[package]
+name = "crjson-gen"
+version = "0.1.0"
+edition = "2021"
+publish = false
+description = "Generate crJSON fixtures for the CAWG conformance suite"
+
+# Not part of any workspace.
+[workspace]
+
+[dependencies]
+# Pinned c2pa-rs release. To test against a local checkout instead, override with:
+#   cargo run --config 'patch.crates-io.c2pa.path="../../../c2pa-rs/sdk"' -- ...
+c2pa = { version = "=0.91.2", features = ["file_io"] }
+serde_json = "1"

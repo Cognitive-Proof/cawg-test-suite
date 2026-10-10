@@ -1,0 +1,112 @@
+{
+  "assertion_label": {
+    "outcome": "true",
+    "matches": []
+  },
+  "exactly_one_hard_binding": {
+    "outcome": "true",
+    "matches": []
+  },
+  "hard_binding_is_claims": {
+    "outcome": "true",
+    "matches": []
+  },
+  "ica_algorithm_allowed": {
+    "outcome": "true",
+    "matches": []
+  },
+  "ica_credential_visible": {
+    "outcome": "warning",
+    "matches": [
+      "test:urn:uuid:afffd936-e004-4bd0-aad3-7965f8eccb7c/cawg.identity"
+    ]
+  },
+  "ica_issuer_did": {
+    "outcome": "true",
+    "matches": []
+  },
+  "ica_valid_from_present": {
+    "outcome": "true",
+    "matches": []
+  },
+  "ica_verified_identities_nonempty": {
+    "outcome": "true",
+    "matches": []
+  },
+  "ica_verified_identity_required_fields": {
+    "outcome": "true",
+    "matches": []
+  },
+  "ica_verified_identity_type_fields": {
+    "outcome": "true",
+    "matches": []
+  },
+  "identity_assertion_present": {
+    "outcome": "true",
+    "matches": []
+  },
+  "no_duplicate_references": {
+    "outcome": "true",
+    "matches": []
+  },
+  "no_removed_fields": {
+    "outcome": "true",
+    "matches": []
+  },
+  "no_self_reference": {
+    "outcome": "true",
+    "matches": []
+  },
+  "pads_zero": {
+    "outcome": "true",
+    "matches": []
+  },
+  "referenced_assertions_in_own_claim": {
+    "outcome": "true",
+    "matches": []
+  },
+  "referenced_assertions_nonempty": {
+    "outcome": "true",
+    "matches": []
+  },
+  "referenced_assertions_resolve": {
+    "outcome": "true",
+    "matches": []
+  },
+  "required_fields": {
+    "outcome": "true",
+    "matches": []
+  },
+  "role_cawg_namespace": {
+    "outcome": "true",
+    "matches": []
+  },
+  "role_wellformed": {
+    "outcome": "true",
+    "matches": []
+  },
+  "sig_type_known": {
+    "outcome": "true",
+    "matches": []
+  },
+  "validation_no_failures": {
+    "outcome": "false",
+    "matches": [
+      "test:urn:uuid:afffd936-e004-4bd0-aad3-7965f8eccb7c/cawg.identity"
+    ]
+  },
+  "validation_status_reported": {
+    "outcome": "warning",
+    "matches": [
+      "test:urn:uuid:afffd936-e004-4bd0-aad3-7965f8eccb7c/cawg.identity"
+    ]
+  },
+  "x509_algorithm_allowed": {
+    "outcome": "true",
+    "matches": []
+  },
+  "x509_signature_decodable": {
+    "outcome": "true",
+    "matches": []
+  }
+}
