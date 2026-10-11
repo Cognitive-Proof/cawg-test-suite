@@ -72,7 +72,26 @@ Still open in c2pa-rs; these need an issue or a decision first:
 - [ ] Not yet covered at all:
   - Organizational Identity Profile 1.0
   - Consent and Endorsement assertions (drafts)
-  - Identity 1.3 drafts: +vc-vp and +governance, not reviewed.
+  - **+vc-vp**: decentralized-identity/cawg-identity-assertion#252 (draft, scouten-adobe), branch `w3c-vc-credential-support`, rendered at https://cawg.io/identity/1.3-draft+vc-vp/.
+    - Adds a "verifiable credential binding" credential type, `sig_type: "cawg.verifiable_credential_binding"` (§8.3 "W3C verifiable credentials").
+    - The credential is a W3C VC or VP carrying a C2PA asset binding (`C2PABindingCredential` / `C2PABindingPresentation`), secured with COSE.
+    - Defines 25 `cawg.vcb.*` codes, mostly parallel to `cawg.ica.*`. New ones include `cawg.vcb.binding.mismatch` and `cawg.vcb.invalid_holder`.
+    - Proposes `cawg.identity.binding_enclosure_missing`.
+    - Still has many editorial notes.
+    - The branch was last updated 2026-03-30 and predates 1.3. It still carries the removed `expected_*` fields and their `cawg.identity.expected_*` / `unexpected_countersigner` codes, so it needs rebasing on 1.3 before it's testable.
+    - Revisit when it's rebased; the `cawg.vcb.*` codes would map onto validator cases much like the ICA ones.
+  - **+governance**: decentralized-identity/cawg-identity-assertion#267 (scouten-adobe, last updated 2026-08-31), branch `governance`, rendered at https://cawg.io/identity/1.3-draft+governance/.
+    - Adds an optional `signer_payload.trust_registry` (§5.1.2), with TRQP-style fields: `trqp_authorization_uri`, `entity_id`, `authority_id`, `action`, `resource`, optional `context`.
+    - Also adds `referenced_registry_uri`, governance and trust-registry terms (§3.3), and a TRQP 2.0 normative reference.
+    - No new `sig_type` or status codes.
+    - Trust registry validation (§7.1.1) is still TO DO (8 TO DOs). The CDDL's `trust_registry_uri` disagrees with the prose's `trust_registry`.
+    - Revisit when §7.1.1 is written. The structure of `trust_registry` could get warning-level rubric checks once the CDDL and prose agree.
+    - Related open PRs:
+      - #276 Trust Registry Resolution API (mrappard, draft)
+      - #278 Named Actor claims (chalford, branch `trust-governance-vc`)
+      - #280 C2PA Trust List in the interim trust model (byh-trufo)
+      - #281 governance verification (mrappard)
+      - #282 trust registry portable snapshot (mrappard)
   - **+vlei**: decentralized-identity/cawg-identity-assertion#269, a draft on branch `vlei`, rendered at https://cawg.io/identity/1.3-draft+vlei/.
     - It defines `sig_type: "cawg.vlei"`.
     - Its `signature` is a CBOR `vlei-signature-payload-map`:
