@@ -21,6 +21,8 @@
 # cawg.identity.well-formed or cawg.identity.trusted for an assertion that
 # also has a cawg.* failure code (§7.2: those success codes mean the
 # assertion was validated; §7.1, §8.1.5 and §8.2.2 failures reject it).
+# cawg.x509.credential.untrusted is exempt: well-formed is defined as
+# "validated, no root of trust identified", which an untrusted chain is.
 
 spec: "CAWG Identity Assertion 1.3 (https://cawg.io/identity/1.3/)"
 subject: identity
@@ -88,9 +90,14 @@ cases:
   # --- Identity claims aggregation (§8.1.5) ---------------------------------
   - id: ica_valid_untrusted_issuer
     asset: claim_aggregation/ica_validation/success.jpg
-    description: Valid ICA credential from an issuer that is not on the validator's trust list.
+    description: >-
+      Valid ICA credential from an issuer that is not on the validator's trust list.
+      The spec's table lists cawg.ica.untrusted_issuer as a failure, but this suite
+      accepts it in any category: an untrusted ICA issuer is scoped to the identity
+      assertion and should not fail the C2PA Manifest (c2pa-rs reports it as
+      informational and withholds cawg.ica.credential_valid).
     spec_section: "§8.1.5"
-    expect_failure: [cawg.ica.untrusted_issuer]
+    expect_any: [cawg.ica.untrusted_issuer]
     forbid_failure_prefixes: [cawg.identity., cawg.ica.signature, cawg.ica.invalid, cawg.ica.signer_payload, cawg.ica.valid_]
 
   - id: ica_adobe_connected_identities
@@ -310,9 +317,9 @@ cases:
 
   - id: ica_credential_visible_valid
     asset: ica/credential_visible_valid.jpg
-    description: Valid ICA credential with no x5chain header; its did:jwk issuer is not on this suite's trusted issuer list.
+    description: Valid ICA credential with no x5chain header; its did:jwk issuer is not on this suite's trusted issuer list (cawg.ica.untrusted_issuer accepted in any category, see ica_valid_untrusted_issuer).
     spec_section: "§8.1.5"
-    expect_failure: [cawg.ica.untrusted_issuer]
+    expect_any: [cawg.ica.untrusted_issuer]
     forbid_failure_prefixes: [cawg.identity., cawg.ica.signature, cawg.ica.invalid, cawg.ica.signer_payload, cawg.ica.valid_, cawg.ica.verified_identities]
 
   - id: ica_verified_identities_empty

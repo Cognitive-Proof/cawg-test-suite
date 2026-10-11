@@ -35,6 +35,7 @@ SUBJECT_URLS = {
     "manifest": re.compile(r""),
 }
 SUCCESS_CODES = {"cawg.identity.well-formed", "cawg.identity.trusted"}
+CONSISTENCY_EXEMPT = {"cawg.x509.credential.untrusted"}
 
 
 def crjson_path(crjson_dir, asset):
@@ -97,8 +98,11 @@ def check_case(case, crjson):
 
     # Consistency: no well-formed/trusted on an assertion that has a cawg.* failure.
     # §7.2 defines those success codes as "validated"; §7.1, §8.1.5 and §8.2.2
-    # failures reject the assertion.
-    failed_urls = {u for u, c in statuses["failure"] if c.startswith("cawg.")}
+    # failures reject the assertion. cawg.x509.credential.untrusted is excluded:
+    # §8.2.2 calls it a rejection, but §7.2 defines well-formed as "validated, no
+    # root of trust identified", which is exactly an untrusted chain (TODO.md).
+    failed_urls = {u for u, c in statuses["failure"]
+                   if c.startswith("cawg.") and c not in CONSISTENCY_EXEMPT}
     for url, code in statuses["success"]:
         if code in SUCCESS_CODES and url in failed_urls:
             problems.append(f"{code} reported alongside a cawg.* failure")

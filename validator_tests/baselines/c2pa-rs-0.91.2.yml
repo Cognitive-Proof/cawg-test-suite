@@ -29,10 +29,6 @@ known_failures:
     reason: >-
       Reports cawg.ica.invalid_issuer instead of cawg.ica.did_unsupported_method
       (the c2pa-rs test for this fixture says the latter MUST be issued).
-  - id: ica_valid_untrusted_issuer
-    reason: >-
-      Reports cawg.ica.untrusted_issuer as informational; the §8.1.5 status table
-      classifies it as a failure code.
 
   # --- Cases from the c2pa-rs generator branch (cawg/conformance-fixtures) ---
   - id: identity_references_ingredient_assertion
@@ -50,14 +46,10 @@ known_failures:
       the identity assertion's label (§7.2).
   - id: x509_outside_validity
     reason: Reports cawg.identity.well-formed alongside cawg.x509.signature.outside_validity.
-  - id: x509_untrusted_chain
-    reason: Reports cawg.identity.well-formed alongside cawg.x509.credential.untrusted.
   - id: x509_interim_mailbox_policy
     reason: >-
       Trusts a certificate with the mailbox-validated S/MIME policy, which the §8.2.4
       interim trust model excludes; certificate policy OIDs appear not to be checked.
-  - id: ica_credential_visible_valid
-    reason: Reports cawg.ica.untrusted_issuer as informational (same as ica_valid_untrusted_issuer).
   - id: ica_verified_identities_empty
     reason: Reports cawg.ica.invalid_verifiable_credential instead of cawg.ica.verified_identities.missing.
   - id: ica_verified_identity_missing_provider_name

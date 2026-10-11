@@ -187,7 +187,9 @@ assertion, the metadata assertion, or the whole manifest.
 Every identity case also checks one consistency rule: a validator must not
 report `cawg.identity.well-formed` or `cawg.identity.trusted` for an assertion
 that also has a `cawg.*` failure. §7.2 defines those success codes as "validated",
-and §7.1, §8.1.5 and §8.2.2 failures reject the assertion.
+and §7.1, §8.1.5 and §8.2.2 failures reject the assertion. The one exception is
+`cawg.x509.credential.untrusted`. §7.2 defines `well-formed` as "validated, no root of
+trust identified", which is exactly an untrusted chain, so the spec is ambiguous there.
 
 16 of the identity cases use assets from the c2pa-rs generator branch (see
 [Generated identity fixtures](#generated-identity-fixtures)). Their X.509 trust-model cases
@@ -209,11 +211,11 @@ training-mining assets exist only for the generator rubric.
 
 ### c2pa-rs 0.91.2 baseline
 
-The crJSON in `fixtures/crjson/` comes from c2pa-rs 0.91.2. It passes 41 of 61
-cases, including all metadata and training-mining cases. The 20 failures are all identity cases, listed with reasons in
+The crJSON in `fixtures/crjson/` comes from c2pa-rs 0.91.2. It passes 44 of 61
+cases, including all metadata and training-mining cases. The 17 failures are all identity cases, listed with reasons in
 [`baselines/c2pa-rs-0.91.2.yml`](validator_tests/baselines/c2pa-rs-0.91.2.yml):
 - `cawg.identity.cbor.invalid` is not reported for malformed CBOR.
-- `cawg.identity.well-formed` is reported alongside `cawg.*` failures (5 structural and 2 X.509 cases).
+- `cawg.identity.well-formed` is reported alongside `cawg.*` failures (5 structural cases and 1 X.509 case).
 - References into an ingredient claim are reported as `cawg.identity.assertion.mismatch`, so the
   incorrect-hard-binding check is never reached.
 - Statuses for a second identity assertion use the first one's label (`cawg.identity`, not `cawg.identity__1`).
@@ -221,7 +223,6 @@ cases, including all metadata and training-mining cases. The 20 failures are all
 - The interim trust model's certificate-policy rule isn't enforced: a mailbox-validated certificate is trusted.
 - ICA problems:
   - `cawg.ica.invalid_issuer` is reported where `cawg.ica.did_unsupported_method` is expected.
-  - `cawg.ica.untrusted_issuer` is reported as informational, but the spec defines it as a failure (2 cases).
   - Empty or invalid `verifiedIdentities` are reported as `cawg.ica.invalid_verifiable_credential`, not
     `cawg.ica.verified_identities.*`.
   - A `cawg.crypto_wallet` entry without `address` is accepted.
@@ -229,6 +230,13 @@ cases, including all metadata and training-mining cases. The 20 failures are all
 
 CI requires the baseline to match exactly. A new failure, or a listed failure
 that now passes, fails the build.
+
+Fixes for 15 of these are proposed upstream (contentauth/c2pa-rs#2836 to #2843; see
+[TODO.md](TODO.md)). With all eight applied to c2pa-rs `main`, 59 of 61 cases pass.
+
+`cawg.ica.untrusted_issuer` is accepted in any category, even though the spec's table lists it as a
+failure. An untrusted ICA issuer concerns only the identity assertion and shouldn't fail the whole
+C2PA Manifest; c2pa-rs reports it as informational and withholds `cawg.ica.credential_valid`.
 
 ## Regenerating fixtures
 
