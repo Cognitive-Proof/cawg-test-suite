@@ -72,7 +72,15 @@ Still open in c2pa-rs; these need an issue or a decision first:
 - [ ] Not yet covered at all:
   - Organizational Identity Profile 1.0
   - Consent and Endorsement assertions (drafts)
-  - Identity 1.3 drafts (+vc-vp, +vlei, +governance)
+  - Identity 1.3 drafts: +vc-vp and +governance, not reviewed.
+  - **+vlei**: decentralized-identity/cawg-identity-assertion#269, a draft on branch `vlei`, rendered at https://cawg.io/identity/1.3-draft+vlei/.
+    - It defines `sig_type: "cawg.vlei"`.
+    - Its `signature` is a CBOR `vlei-signature-payload-map`:
+      - required fields: `signer_aid`, `qvi_cred`, `le_cred`, `signer_aid_oobi`, `kel_seq_num`, `aid_sig`
+      - conditional: `role_cred`
+      - optional: `anchor_seq_num`
+    - Revisit when it defines `cawg.vlei.*` status codes and the §8.3.6 trust model, which is still "TO DO".
+    - Nothing in our toolchain (c2pa-rs) can sign or verify `cawg.vlei` yet.
 
 ## Housekeeping
 
