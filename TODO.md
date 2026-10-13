@@ -104,7 +104,8 @@ Still open in c2pa-rs; these need an issue or a decision first:
 ## Plugins
 
 - [ ] Tag `v0.2.0` once plugin support is merged. `examples/plugins/example-music/requirements.txt` pins it.
-- [ ] Publish to PyPI. Blocked: PyPI rejects direct-URL dependencies, and json-formula-py isn't on PyPI yet.
+- [ ] Publish to PyPI. Blocked: PyPI rejects direct-URL dependencies, and json-formula-py isn't on PyPI yet. Requested in **adobe/json-formula-py#3**, which also reports its packaging problems (MIT metadata vs the Apache-2.0 LICENSE, missing license-files, project URLs pointing to a fork). Fallback: bundle a copy (Apache-2.0, with a NOTICE entry).
+- [ ] Pin json-formula-py to a commit (`327a8d7`) until it has releases, so the engine can't change under a tagged suite version.
 - [ ] Maybe: discover installed plugins through an entry-point group, so `cawg-suite list` finds them without `--plugin`.
 - [ ] Maybe: a `cawg-suite new-plugin` command that copies the example plugin.
 
