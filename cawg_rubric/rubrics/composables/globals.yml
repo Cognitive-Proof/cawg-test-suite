@@ -10,6 +10,10 @@ rubric_metadata:
 # Expressions are json-formula (https://opensource.adobe.com/json-formula/):
 #   - "text" is a string literal; 'field.name' quotes an identifier.
 #   - Arguments are passed as the global array $args (see cawg_rubric/evaluator.py).
+#
+# Plugins can use every helper here. The ones listed under "Core helpers you can
+# use" in docs/plugins.md, and the entry shapes they return, are public API:
+# changing them needs a minor version bump. The rest may change in any release.
 
 variables:
   # CAWG Identity 1.3 §8: signature types defined by this version.

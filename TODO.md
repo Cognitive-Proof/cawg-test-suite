@@ -101,10 +101,17 @@ Still open in c2pa-rs; these need an issue or a decision first:
     - Revisit when it defines `cawg.vlei.*` status codes and the §8.3.6 trust model, which is still "TO DO".
     - Nothing in our toolchain (c2pa-rs) can sign or verify `cawg.vlei` yet.
 
+## Plugins
+
+- [ ] Tag `v0.2.0` once plugin support is merged. `examples/plugins/example-music/requirements.txt` pins it.
+- [ ] Publish to PyPI. Blocked: PyPI rejects direct-URL dependencies, and json-formula-py isn't on PyPI yet.
+- [ ] Maybe: discover installed plugins through an entry-point group, so `cawg-suite list` finds them without `--plugin`.
+- [ ] Maybe: a `cawg-suite new-plugin` command that copies the example plugin.
+
 ## Housekeeping
 
 - [ ] Keep `cawg_rubric/` engine code in sync with c2pa-org/conformance-public `asset-rubrics/` (adapted from `f22ce0a`, CC BY 4.0; keep the NOTICE attribution).
-- [ ] When the metadata spec 1.2 is ratified, promote the 1.2-draft warnings to the rules the final text makes normative, and rename the rubric.
+- [ ] When the metadata spec 1.2 is ratified, promote the 1.2-draft warnings to the rules the final text makes normative, and rename the rubric. Both are plugin-API changes (warning to failure, new profile ID), so they need a minor version bump.
 
 ## Done
 
@@ -113,3 +120,4 @@ Still open in c2pa-rs; these need an issue or a decision first:
 - [x] c2pa-rs generator branch `cawg/conformance-fixtures` (pushed to mrappard/c2pa-rs-text-support). 16 identity / X.509 / ICA fixtures imported, with 16 validator cases and the minted CAWG trust anchor.
 - [x] Training and Data Mining Assertion 1.1 rubric, validator cases, and signed assets (`make-assets training-mining`).
 - [x] Repo published as Cognitive-Proof/cawg-test-suite and renamed from "CAWG Conformance".
+- [x] Plugin support (0.2.0): `cawg_rubric/suite.yml` + `cawg-tests.yml` replace the hard-coded recipes; `cawg-plugin.yml` manifests with guardrails (add and tighten only); the `cawg-suite` CLI; a pytest plugin shared by the core and plugins; the fictional `examples/plugins/example-music`; docs/plugins.md.

@@ -220,6 +220,11 @@ def _report_text(report_text_dict, state, matches):
 def evaluate(rubric_path, data, debug=False):
     """Evaluate crJSON `data` (a dict) against the rubric and return the report dict."""
     metadata, statements = load_rubric(rubric_path)
+    return evaluate_rubric(metadata, statements, data, debug=debug)
+
+
+def evaluate_rubric(metadata, statements, data, debug=False):
+    """Evaluate crJSON against an already loaded (or assembled) rubric."""
     engine, variables = create_json_formula_engine(metadata, debug=debug)
 
     results = []

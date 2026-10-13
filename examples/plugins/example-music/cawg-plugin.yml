@@ -1,0 +1,37 @@
+# An example plugin: a FICTIONAL music-industry profile built on the CAWG
+# profiles. It does not represent any real organisation's requirements.
+#
+# Copy this directory to start your own plugin; see docs/plugins.md in
+# cawg-test-suite for every key.
+
+name: org.example.music
+version: 0.1.0
+issuer: Example Music Profile (fictional)
+requires: "cawg-test-suite>=0.2,<0.3"
+
+# Every statement this plugin adds is named music:<name>.
+statement_prefix: music
+# Extra helpers. The core helpers (_metadata, _identities, _refs, ...) are always available.
+globals: rubrics/globals.yml
+# Built rubrics are committed here, so tools that only read rubric files can use them.
+build_dir: build
+
+profiles:
+  - id: music-1.0
+    name: Example Music Profile 1.0 (fictional)
+    extends: [cawg:identity-1.3, cawg:metadata-1.1]
+    composables: [rubrics/music-1.0.yml]
+    # Tighten CAWG recommendations to requirements. Only warning -> fail is allowed.
+    overrides:
+      metadata:gathered_referenced_by_identity: fail
+      metadata:urn_values_wellformed: fail
+
+validator_cases: [validator_tests/*-cases.yml]
+assets_root: fixtures/assets
+unit_fixtures: fixtures/unit
+crjson_root: fixtures/crjson
+baseline: validator_tests/baselines/c2pa-rs-0.91.2.yml
+# Assets that only exercise the rubric: validators report them like valid.jpg.
+rubric_only_assets:
+  - example-music/isrc_missing.jpg
+  - example-music/isrc_malformed.jpg

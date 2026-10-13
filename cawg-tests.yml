@@ -1,0 +1,17 @@
+# Test configuration for the core suite. Plugins put the same keys in their
+# cawg-plugin.yml; `pytest` collects either file (see docs/plugins.md).
+
+validator_cases: [validator_tests/*-cases.yml]
+assets_root: fixtures/assets
+unit_fixtures: fixtures/unit
+crjson_root: fixtures/crjson
+baseline: validator_tests/baselines/c2pa-rs-0.91.2.yml
+
+# Assets that exist only to exercise generator rubrics; the spec says nothing
+# about how validators should report them.
+rubric_only_assets:
+  - training-mining/invalid_use_value.jpg
+  - training-mining/undefined_cawg_key.jpg
+  - training-mining/missing_entries.jpg
+  - training-mining/constraints_info_spelling.jpg
+  - training-mining/legacy_c2pa_label.jpg

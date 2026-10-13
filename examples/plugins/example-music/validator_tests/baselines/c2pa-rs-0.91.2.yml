@@ -1,0 +1,7 @@
+# Known failures of the validator that produced fixtures/crjson/
+# (c2pa-rs 0.91.2 via cawg-test-suite's tools/crjson-gen).
+
+validator: c2pa-rs
+version: 0.91.2
+
+known_failures: []

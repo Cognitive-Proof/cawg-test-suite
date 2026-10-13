@@ -11,23 +11,28 @@ You need Python 3.10 or later. Rust 1.96 is needed only to regenerate fixtures.
 
 ```bash
 python3 -m venv .venv
-.venv/bin/pip install -r requirements.txt
-./build_rubrics.sh   # composables -> rubrics/*.rubric.yml, then schema validation
+.venv/bin/pip install -e '.[test]'
+./build_rubrics.sh   # composables -> cawg_rubric/rubrics/*.rubric.yml, then schema validation
 ./run_tests.sh       # pytest; extra arguments are passed through
 ```
 
-CI runs on every push. It checks that the built rubrics and unit fixtures are
-up to date, then runs the tests.
+`./run_tests.sh` runs `tests/` and the conformance checks that the pytest plugin
+collects from `cawg-tests.yml`: built rubrics up to date, unit fixtures,
+snapshots, validator cases and the c2pa-rs baseline.
+
+CI runs on every push. It checks that the unit fixtures are up to date, runs the
+tests, tests the example plugin from its own directory, and installs the package
+into a clean environment.
 
 ## Adding or changing a rubric statement
 
-1. Edit or add a statement in `rubrics/composables/<spec>-*.yml`. Shared helpers go in `globals.yml`.
-   A new spec also needs a recipe in `cawg_rubric/build.py` and an entry in `tests/conftest.py`.
+1. Edit or add a statement in `cawg_rubric/rubrics/composables/<spec>-*.yml`. Shared helpers go in `globals.yml`.
+   A new spec also needs a profile in `cawg_rubric/suite.yml`.
 2. Run `./build_rubrics.sh`. This rebuilds and schema-validates the rubric.
 3. Add a `-pos` / `-neg` pair to `fixtures/unit/make_unit_fixtures.py`, then run
    `.venv/bin/python fixtures/unit/make_unit_fixtures.py`.
 4. Run `./run_tests.sh`. If outcomes changed on purpose, refresh snapshots with
-   `UPDATE_SNAPSHOTS=1 ./run_tests.sh tests/test_rubric_fixtures.py`.
+   `UPDATE_SNAPSHOTS=1 ./run_tests.sh cawg-tests.yml`.
 
 Statement conventions:
 - IDs are `<spec>:<snake_case>`.
@@ -35,6 +40,11 @@ Statement conventions:
 - Offending assertions are returned as `<manifest label>/<assertion label>`, using `failIfMatched` or `warnIfMatched`.
 
 [CLAUDE.md](CLAUDE.md) lists the json-formula quirks the rubrics work around.
+
+Statement IDs, subjects and the public helpers in `globals.yml` are the plugin
+API. Removing or renaming one, changing a public helper's entry shape, or making
+a warning a failure needs a minor version bump (`cawg_rubric/__init__.py`); see
+"Versioning and stability" in [docs/plugins.md](docs/plugins.md).
 
 ## Adding a validator case
 
@@ -51,7 +61,7 @@ Rebuild crJSON from the assets (needs Rust 1.96; `tools/crjson-gen/rust-toolchai
 
 ```bash
 cargo run --release --manifest-path tools/crjson-gen/Cargo.toml -- fixtures/assets fixtures/crjson
-UPDATE_SNAPSHOTS=1 ./run_tests.sh tests/test_rubric_fixtures.py
+UPDATE_SNAPSHOTS=1 ./run_tests.sh cawg-tests.yml
 ```
 
 Then update `validator_tests/baselines/` if the reference validator's results changed.
@@ -66,6 +76,13 @@ cargo run --release --manifest-path tools/crjson-gen/Cargo.toml --bin make-asset
 
 c2pa-rs refuses to sign a metadata assertion without `@context`, so that case
 only has a hand-built unit fixture.
+
+The example plugin's assets are in a group that is only built when named:
+
+```bash
+cargo run --release --manifest-path tools/crjson-gen/Cargo.toml --bin make-assets -- \
+  examples/plugins/example-music/fixtures/assets example-music
+```
 
 ### Generated identity fixtures
 

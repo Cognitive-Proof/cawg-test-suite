@@ -5,11 +5,11 @@ validate_rubric.py - Validate rubric YAML files against the asset-rubrics JSON S
 Adapted from https://github.com/c2pa-org/conformance-public
 asset-rubrics/validate_rubric.py (commit f22ce0a), used under CC BY 4.0
 (https://creativecommons.org/licenses/by/4.0/); only the schema location and
---all directory changed. See NOTICE.
+--all directory changed, and validate_text() was added for in-memory rubrics. See NOTICE.
 
 Usage:
     python -m cawg_rubric.validate_rubric <file.yml> [file2.yml ...]
-    python -m cawg_rubric.validate_rubric --all   # validate all built rubrics in rubrics/
+    python -m cawg_rubric.validate_rubric --all   # validate the built core rubrics
 
 Requires:
     pip install pyyaml jsonschema
@@ -104,6 +104,16 @@ def validate_rubric(path: Path, schema: dict) -> list[str]:
     return messages
 
 
+def validate_text(text: str, name: str = "rubric") -> list[str]:
+    """Schema and duplicate-ID errors for a rubric given as text (empty list = valid)."""
+    import tempfile
+
+    with tempfile.TemporaryDirectory() as tmp:
+        path = Path(tmp) / f"{name}.yml"
+        path.write_text(text, encoding="utf-8")
+        return validate_rubric(path, load_schema()) + check_duplicate_ids(path)
+
+
 def check_duplicate_ids(path: Path) -> list[str]:
     """
     Additional check not expressible in JSON Schema: statement ids must be
@@ -151,13 +161,13 @@ def main() -> int:
         "--all",
         "-a",
         action="store_true",
-        help="Validate all built *.rubric.yml files in rubrics/.",
+        help="Validate the built core rubrics in cawg_rubric/rubrics/.",
     )
     args = parser.parse_args()
 
     paths: list[Path] = []
     if args.all:
-        paths = sorted((Path(__file__).parent.parent / "rubrics").glob("*.rubric.yml"))
+        paths = sorted((Path(__file__).parent / "rubrics").glob("*.rubric.yml"))
         if not paths:
             print("No *.yml files found.", file=sys.stderr)
             return 1

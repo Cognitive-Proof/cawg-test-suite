@@ -1,0 +1,39 @@
+# The core CAWG profiles. Plugins extend these by ID, e.g. `cawg:metadata-1.1`.
+#
+# Statement IDs, subjects and the globals marked `# public` in globals.yml are
+# the plugin API: see docs/plugins.md for the stability policy.
+
+name: cawg
+statement_prefixes: [identity, metadata, training-mining]
+globals: rubrics/composables/globals.yml
+
+profiles:
+  - id: identity-1.3
+    name: CAWG Identity Assertion 1.3 Rubric
+    target: rubrics/cawg-identity-1.3.rubric.yml
+    composables:
+      - rubrics/composables/identity-1.3-structure.yml
+      - rubrics/composables/identity-1.3-x509.yml
+      - rubrics/composables/identity-1.3-ica.yml
+      - rubrics/composables/identity-1.3-validation.yml
+
+  - id: metadata-1.1
+    name: CAWG Metadata Assertion 1.1 Rubric (with 1.2-draft recommendations)
+    target: rubrics/cawg-metadata-1.1.rubric.yml
+    composables:
+      - rubrics/composables/metadata-1.1.yml
+      - rubrics/composables/metadata-1.2-draft.yml
+
+  - id: training-mining-1.1
+    name: CAWG Training and Data Mining Assertion 1.1 Rubric
+    target: rubrics/cawg-training-mining-1.1.rubric.yml
+    composables:
+      - rubrics/composables/training-mining-1.1.yml
+
+# Which validation status entries a validator case looks at. A status url may be
+# the bare assertion label or a JUMBF URI ending in it; "manifest" matches every
+# status entry.
+subjects:
+  identity: '(^|/)cawg\.identity(__\d+)?$'
+  metadata: '(^|/)cawg\.metadata(__\d+)?$'
+  manifest: ''

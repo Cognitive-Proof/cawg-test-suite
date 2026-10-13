@@ -7,9 +7,10 @@ extend [C2PA](https://c2pa.org/) Content Credentials.
 The CAWG specifications don't come with test cases. This suite turns their
 requirements into checks you can run against your own implementation. It works
 whether your product **writes** CAWG assertions (a generator) or **reads and
-validates** them (a validator).
+validates** them (a validator). Industry groups can build their own conformance
+profiles on top of it as [plugins](#extending-the-suite-with-plugins).
 
-> **Status: early (0.1.0).** This is an independent project. It is not an official
+> **Status: early (0.2.0).** This is an independent project. It is not an official
 > CAWG, DIF or C2PA conformance program. Expect changes as the specifications and
 > the suite evolve. Spec questions and disagreements with the suite are welcome as
 > [issues](https://github.com/Cognitive-Proof/cawg-test-suite/issues).
@@ -18,9 +19,9 @@ validates** them (a validator).
 
 | Specification | Generator checks (rubric) | Validator cases |
 | --- | --- | --- |
-| [Identity Assertion 1.3](https://cawg.io/identity/1.3/): X.509 (`cawg.x509.cose`) and identity claims aggregation (`cawg.identity_claims_aggregation`) | 26 statements: [`cawg-identity-1.3.rubric.yml`](rubrics/cawg-identity-1.3.rubric.yml) | 49 cases: [`identity-1.3-cases.yml`](validator_tests/identity-1.3-cases.yml) |
-| [Metadata Assertion 1.1](https://cawg.io/metadata/1.1/), with 1.2-draft recommendations as warnings | 9 statements: [`cawg-metadata-1.1.rubric.yml`](rubrics/cawg-metadata-1.1.rubric.yml) | 8 cases: [`metadata-1.1-cases.yml`](validator_tests/metadata-1.1-cases.yml) |
-| [Training and Data Mining Assertion 1.1](https://cawg.io/training-and-data-mining/1.1/) | 11 statements: [`cawg-training-mining-1.1.rubric.yml`](rubrics/cawg-training-mining-1.1.rubric.yml) | 4 cases: [`training-mining-1.1-cases.yml`](validator_tests/training-mining-1.1-cases.yml) |
+| [Identity Assertion 1.3](https://cawg.io/identity/1.3/): X.509 (`cawg.x509.cose`) and identity claims aggregation (`cawg.identity_claims_aggregation`) | 26 statements: [`cawg-identity-1.3.rubric.yml`](cawg_rubric/rubrics/cawg-identity-1.3.rubric.yml) | 49 cases: [`identity-1.3-cases.yml`](validator_tests/identity-1.3-cases.yml) |
+| [Metadata Assertion 1.1](https://cawg.io/metadata/1.1/), with 1.2-draft recommendations as warnings | 9 statements: [`cawg-metadata-1.1.rubric.yml`](cawg_rubric/rubrics/cawg-metadata-1.1.rubric.yml) | 8 cases: [`metadata-1.1-cases.yml`](validator_tests/metadata-1.1-cases.yml) |
+| [Training and Data Mining Assertion 1.1](https://cawg.io/training-and-data-mining/1.1/) | 11 statements: [`cawg-training-mining-1.1.rubric.yml`](cawg_rubric/rubrics/cawg-training-mining-1.1.rubric.yml) | 4 cases: [`training-mining-1.1-cases.yml`](validator_tests/training-mining-1.1-cases.yml) |
 
 [docs/coverage.md](docs/coverage.md) lists what every statement and case checks, and
 what can't be checked.
@@ -49,20 +50,23 @@ Requires Python 3.10 or later.
 git clone https://github.com/Cognitive-Proof/cawg-test-suite.git
 cd cawg-test-suite
 python3 -m venv .venv
-.venv/bin/pip install -r requirements.txt
+.venv/bin/pip install -e '.[test]'
 ./run_tests.sh
 ```
+
+This installs the `cawg-suite` command.
 
 ### Test a generator
 
 Produce crJSON for your asset with any C2PA validator, then:
 
 ```bash
-.venv/bin/python -m cawg_rubric.evaluator rubrics/cawg-identity-1.3.rubric.yml my-asset.crjson.json
+.venv/bin/cawg-suite evaluate identity-1.3 my-asset.crjson.json
 ```
 
-Use `cawg-metadata-1.1.rubric.yml` or `cawg-training-mining-1.1.rubric.yml` for the
-other assertions. The report groups every statement under `true`, `false` or
+Use `metadata-1.1` or `training-mining-1.1` for the other assertions, or pass
+the path of a built rubric. `cawg-suite list` shows every profile and its
+statements. The report groups every statement under `true`, `false` or
 `warning`, and the exit status is 1 if any statement is `false`.
 
 ### Test a validator
@@ -72,12 +76,35 @@ write its crJSON to a directory with the same layout (`.jpg` becomes `.crjson.js
 Then:
 
 ```bash
-.venv/bin/python validator_tests/check_validator.py path/to/your-output
+.venv/bin/cawg-suite check-validator path/to/your-output
 ```
+
+Run it from the repository root, where `cawg-tests.yml` lists the cases.
 
 For the X.509 trust-model cases, configure
 [`tools/crjson-gen/generated_trust_anchor.pem`](tools/crjson-gen/generated_trust_anchor.pem)
 as a CAWG trust anchor in your validator.
+
+## Extending the suite with plugins
+
+CAWG sets the baseline everyone shares. A plugin lets an industry body,
+platform or consortium publish a stricter profile on top of it, in its own
+repository. A plugin can:
+- add its own checks, e.g. "every recording has an ISRC"
+- turn CAWG warnings into failures
+- add its own signed test assets and validator cases
+
+A plugin can't weaken or disable a CAWG check, and this is enforced. So an
+asset that passes a plugin profile also passes CAWG.
+
+[`examples/plugins/example-music/`](examples/plugins/example-music/) is a complete
+plugin for a fictional music profile. Copy it to start your own. The guide
+is [docs/plugins.md](docs/plugins.md).
+
+```bash
+cawg-suite lint-plugin examples/plugins/example-music
+cawg-suite evaluate music-1.0 my-song.crjson.json --plugin examples/plugins/example-music
+```
 
 ## Results: c2pa-rs
 
@@ -140,6 +167,9 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for:
 - development setup
 - adding rubric statements and validator cases
 - regenerating fixtures
+
+To build a profile on top of the suite rather than change it, see
+[docs/plugins.md](docs/plugins.md).
 
 Results from other validators are especially welcome.
 

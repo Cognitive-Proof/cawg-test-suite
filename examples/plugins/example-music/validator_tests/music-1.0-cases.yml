@@ -1,0 +1,33 @@
+# Validator cases for the example music profile (fictional).
+#
+# The profile adds no status codes, so validators have nothing new to report.
+# What these cases pin down is that the profile's assets are ordinary,
+# valid Content Credentials: a validator must not reject a recording because
+# of its music metadata or its publisher identity assertion. The profile's
+# own requirements (ISRC, publisher role) are checked by the rubric.
+#
+# Keys are described in cawg-test-suite's validator_tests/identity-1.3-cases.yml.
+
+spec: "Example Music Profile 1.0 (fictional)"
+subject: manifest
+
+cases:
+  - id: music_valid
+    asset: example-music/valid.jpg
+    description: A recording with an ISRC, attested by the publisher's X.509 identity assertion.
+    spec_section: "§2, §3"
+    forbid_any_failure: true
+
+  - id: music_publisher_identity_validates
+    asset: example-music/valid.jpg
+    subject: identity
+    description: The publisher's identity assertion validates.
+    spec_section: "§3; CAWG Identity 1.3 §7.2"
+    expect_any: [cawg.identity.well-formed, cawg.identity.trusted]
+    forbid_failure_prefixes: [cawg.]
+
+  - id: music_not_publisher
+    asset: example-music/not_publisher.jpg
+    description: The identity assertion has the cawg.creator role, which fails the profile but is valid CAWG.
+    spec_section: "§3"
+    forbid_any_failure: true

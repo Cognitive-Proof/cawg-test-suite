@@ -1,0 +1,41 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "cawg-test-suite"
+dynamic = ["version"]
+description = "Conformance test suite for the CAWG identity, metadata and training-and-data-mining assertions, with a plugin API for industry profiles"
+readme = "README.md"
+license = "MIT OR Apache-2.0"
+license-files = ["LICENSE-MIT", "LICENSE-APACHE", "NOTICE"]
+requires-python = ">=3.10"
+dependencies = [
+    "PyYAML>=6.0",
+    "jsonschema>=4.0",
+    "packaging>=21",
+    "json-formula @ git+https://github.com/adobe/json-formula-py.git",
+]
+
+[project.optional-dependencies]
+test = ["pytest>=8.0"]
+
+[project.scripts]
+cawg-suite = "cawg_rubric.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/Cognitive-Proof/cawg-test-suite"
+
+[tool.setuptools]
+packages = ["cawg_rubric"]
+
+[tool.setuptools.dynamic]
+version = { attr = "cawg_rubric.__version__" }
+
+[tool.setuptools.package-data]
+cawg_rubric = ["suite.yml", "rubrics/*.yml", "rubrics/composables/*.yml", "schema/*.json"]
+
+[tool.pytest.ini_options]
+addopts = "-p cawg_rubric.pytest_plugin"
+pythonpath = ["."]
+testpaths = ["tests", "cawg-tests.yml"]

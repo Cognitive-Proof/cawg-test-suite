@@ -1,4 +1,5 @@
 PyYAML>=6.0
 jsonschema>=4.0
+packaging>=21
 pytest>=8.0
 git+https://github.com/adobe/json-formula-py.git

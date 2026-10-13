@@ -1,0 +1,3 @@
+# Pin the cawg-test-suite minor version this plugin was written for; see
+# `requires` in cawg-plugin.yml.
+cawg-test-suite[test] @ git+https://github.com/Cognitive-Proof/cawg-test-suite@v0.2.0

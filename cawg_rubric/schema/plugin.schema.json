@@ -1,0 +1,100 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/Cognitive-Proof/cawg-test-suite/schemas/plugin.schema.json",
+  "title": "cawg-test-suite plugin manifest (cawg-plugin.yml)",
+  "description": "A conformance profile built on top of the CAWG profiles. Plugins may add statements, tighten CAWG warnings to failures and add validator cases; they may never weaken a CAWG statement. See docs/plugins.md.",
+  "type": "object",
+  "required": ["name", "version", "requires", "statement_prefix", "profiles"],
+  "properties": {
+    "name": {
+      "description": "Reverse-domain identifier of the plugin, e.g. org.example.music.",
+      "type": "string",
+      "pattern": "^[a-z0-9-]+(\\.[a-z0-9-]+)+$"
+    },
+    "version": {"type": "string", "minLength": 1},
+    "issuer": {"description": "Issuer recorded in built rubrics (default: name).", "type": "string"},
+    "date": {"description": "Date recorded in built rubrics (ISO 8601).", "type": "string"},
+    "requires": {
+      "description": "The cawg-test-suite versions this plugin works with, as a PEP 508 requirement, e.g. \"cawg-test-suite>=0.2,<0.3\".",
+      "type": "string",
+      "pattern": "^cawg-test-suite"
+    },
+    "statement_prefix": {
+      "description": "Category of every statement the plugin adds: statement IDs are <prefix>:<name>.",
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9-]*$"
+    },
+    "globals": {
+      "description": "Path to a YAML file with extra variables and expressions. The core globals are always available and cannot be redefined.",
+      "type": "string"
+    },
+    "build_dir": {
+      "description": "Directory for built rubrics. When set, the tests require the committed rubrics to be up to date.",
+      "type": "string"
+    },
+    "profiles": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"$ref": "#/$defs/profile"}
+    },
+    "subjects": {
+      "description": "Extra validator-case subjects: name -> regular expression matched against status entry urls.",
+      "type": "object",
+      "additionalProperties": {"type": "string"}
+    },
+    "validator_cases": {"$ref": "#/$defs/tests/properties/validator_cases"},
+    "assets_root": {"$ref": "#/$defs/tests/properties/assets_root"},
+    "unit_fixtures": {"$ref": "#/$defs/tests/properties/unit_fixtures"},
+    "crjson_root": {"$ref": "#/$defs/tests/properties/crjson_root"},
+    "baseline": {"$ref": "#/$defs/tests/properties/baseline"},
+    "rubric_only_assets": {"$ref": "#/$defs/tests/properties/rubric_only_assets"}
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "profile": {
+      "type": "object",
+      "required": ["id", "name"],
+      "properties": {
+        "id": {"type": "string", "pattern": "^[a-z0-9][a-z0-9.-]*$"},
+        "name": {"type": "string"},
+        "extends": {
+          "description": "Core profiles this profile builds on, e.g. cawg:metadata-1.1.",
+          "type": "array",
+          "items": {"type": "string", "pattern": "^cawg:"}
+        },
+        "composables": {
+          "description": "YAML files with the plugin's own statements.",
+          "type": "array",
+          "items": {"type": "string"}
+        },
+        "overrides": {
+          "description": "Core statement ID -> \"fail\". Only warnings can be overridden, and only to failures.",
+          "type": "object",
+          "additionalProperties": {"type": "string"}
+        }
+      },
+      "additionalProperties": false
+    },
+    "tests": {
+      "description": "Test configuration, shared by plugin manifests and the core cawg-tests.yml.",
+      "type": "object",
+      "properties": {
+        "validator_cases": {
+          "description": "Glob patterns of validator case files.",
+          "type": "array",
+          "items": {"type": "string"}
+        },
+        "assets_root": {"description": "Directory of signed test assets that validator cases refer to.", "type": "string"},
+        "unit_fixtures": {"description": "Directory of <category>/<rule>-pos.json and -neg.json crJSON.", "type": "string"},
+        "crjson_root": {"description": "Reference crJSON for the assets, with .rubric.json snapshots.", "type": "string"},
+        "baseline": {"description": "Known failures of the validator that produced crjson_root.", "type": "string"},
+        "rubric_only_assets": {
+          "description": "Assets under assets_root that need no validator case.",
+          "type": "array",
+          "items": {"type": "string"}
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

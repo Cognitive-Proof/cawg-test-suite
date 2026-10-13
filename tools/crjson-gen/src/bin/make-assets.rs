@@ -5,11 +5,16 @@
 //!
 //! Each recipe belongs to a group and is written to `<assets-dir>/<group>/`.
 //! Pass a group (`metadata`, `training-mining`) to rebuild only that group.
+//! The `example-music` group belongs to the example plugin and is only built
+//! when named:
+//!
+//!     make-assets examples/plugins/example-music/fixtures/assets example-music
 //!
 //! Each recipe signs `source/no_manifest.jpg` with the c2pa-rs test
 //! certificates in `signing_settings.toml`. Recipes with `identity: true` also
 //! get a CAWG X.509 identity assertion whose referenced assertions are the
-//! recipe's `references` (the hard binding is always added by c2pa-rs).
+//! recipe's `references` (the hard binding is always added by c2pa-rs) and
+//! whose roles are the recipe's `roles`.
 //!
 //! A metadata assertion without `@context` cannot be built: c2pa-rs refuses to
 //! sign it. That case is covered by the hand-built unit fixtures only.
@@ -31,8 +36,12 @@ struct Recipe {
     name: &'static str,
     identity: bool,
     references: &'static [&'static str],
+    roles: &'static [&'static str],
     assertions: Value,
 }
+
+/// Groups that are only built when named on the command line.
+const EXPLICIT_GROUPS: &[&str] = &["example-music"];
 
 fn metadata(created: bool, data: Value) -> Value {
     json!({ "label": "cawg.metadata", "kind": "Json", "created": created, "data": data })
@@ -120,6 +129,7 @@ fn training_mining_recipes() -> Vec<Recipe> {
         name,
         identity,
         references,
+        roles: &[],
         assertions,
     };
     vec![
@@ -156,7 +166,35 @@ fn training_mining_recipes() -> Vec<Recipe> {
 fn recipes() -> Vec<Recipe> {
     let mut all = metadata_recipes();
     all.extend(training_mining_recipes());
+    all.extend(example_music_recipes());
     all
+}
+
+/// Recording metadata for the example (fictional) music profile plugin.
+fn music_metadata(identifier: &str) -> Value {
+    json!({
+        "@context": { "dc": "http://purl.org/dc/elements/1.1/" },
+        "dc:title": "Example Song",
+        "dc:creator": ["Example Artist"],
+        "dc:identifier": [identifier]
+    })
+}
+
+fn example_music_recipes() -> Vec<Recipe> {
+    let music = |name, roles, identifier| Recipe {
+        group: "example-music",
+        name,
+        identity: true,
+        references: &["cawg.metadata"],
+        roles,
+        assertions: json!([metadata(false, music_metadata(identifier))]),
+    };
+    vec![
+        music("valid", &["cawg.publisher"], "urn:isrc:ZZ-XA1-26-00001"),
+        music("isrc_missing", &["cawg.publisher"], "Example Song"),
+        music("isrc_malformed", &["cawg.publisher"], "urn:isrc:ZZ-XA1-26-001"),
+        music("not_publisher", &["cawg.creator"], "urn:isrc:ZZ-XA1-26-00001"),
+    ]
 }
 
 fn metadata_recipes() -> Vec<Recipe> {
@@ -166,6 +204,7 @@ fn metadata_recipes() -> Vec<Recipe> {
             name: "created",
             identity: false,
             references: &[],
+            roles: &[],
             assertions: json!([metadata(true, spec_image_example())]),
         },
         Recipe {
@@ -173,6 +212,7 @@ fn metadata_recipes() -> Vec<Recipe> {
             name: "outside_c2pa_allowlist",
             identity: false,
             references: &[],
+            roles: &[],
             assertions: json!([metadata(true, outside_allowlist())]),
         },
         Recipe {
@@ -180,6 +220,7 @@ fn metadata_recipes() -> Vec<Recipe> {
             name: "gathered_with_identity",
             identity: true,
             references: &["cawg.metadata"],
+            roles: &[],
             assertions: json!([metadata(false, outside_allowlist())]),
         },
         Recipe {
@@ -187,6 +228,7 @@ fn metadata_recipes() -> Vec<Recipe> {
             name: "gathered_without_identity",
             identity: false,
             references: &[],
+            roles: &[],
             assertions: json!([metadata(false, outside_allowlist())]),
         },
         Recipe {
@@ -194,6 +236,7 @@ fn metadata_recipes() -> Vec<Recipe> {
             name: "media_identifiers",
             identity: true,
             references: &["cawg.metadata"],
+            roles: &[],
             assertions: json!([metadata(false, media_identifiers())]),
         },
         Recipe {
@@ -201,6 +244,7 @@ fn metadata_recipes() -> Vec<Recipe> {
             name: "multiple_instances",
             identity: false,
             references: &[],
+            roles: &[],
             assertions: json!([
                 metadata(true, spec_image_example()),
                 metadata(true, media_identifiers())
@@ -211,6 +255,7 @@ fn metadata_recipes() -> Vec<Recipe> {
             name: "undefined_prefix",
             identity: false,
             references: &[],
+            roles: &[],
             assertions: json!([metadata(true, json!({
                 "@context": { "dc": "http://purl.org/dc/elements/1.1/" },
                 "dc:title": "Defined prefix",
@@ -233,10 +278,19 @@ fn settings_for(recipe: &Recipe) -> String {
         .map(|r| format!("\"{r}\""))
         .collect::<Vec<_>>()
         .join(", ");
-    let cawg = cawg.replace(
+    let mut cawg = cawg.replace(
         "referenced_assertions = [\"cawg.training-mining\"]",
         &format!("referenced_assertions = [{refs}]"),
     );
+    if !recipe.roles.is_empty() {
+        let roles = recipe
+            .roles
+            .iter()
+            .map(|r| format!("\"{r}\""))
+            .collect::<Vec<_>>()
+            .join(", ");
+        cawg.push_str(&format!("\nroles = [{roles}]\n"));
+    }
     format!("{base}\n[cawg_x509_signer]\n{cawg}")
 }
 
@@ -249,7 +303,11 @@ fn main() -> ExitCode {
 
     let mut failed = false;
     for recipe in recipes() {
-        if only_group.as_deref().is_some_and(|g| g != recipe.group) {
+        let skip = match only_group.as_deref() {
+            Some(g) => g != recipe.group,
+            None => EXPLICIT_GROUPS.contains(&recipe.group),
+        };
+        if skip {
             continue;
         }
         let group_dir = out_dir.join(recipe.group);

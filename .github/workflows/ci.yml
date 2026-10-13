@@ -14,18 +14,47 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Install dependencies
-        run: pip install -r requirements.txt
-
-      - name: Built rubric is up to date
-        run: |
-          PYTHON=python ./build_rubrics.sh
-          git diff --exit-code rubrics/
+      - name: Install
+        run: pip install -e '.[test]'
 
       - name: Unit fixtures are up to date
         run: |
           python fixtures/unit/make_unit_fixtures.py
-          git diff --exit-code fixtures/unit/
+          python examples/plugins/example-music/fixtures/unit/make_unit_fixtures.py
+          git diff --exit-code fixtures/unit/ examples/plugins/example-music/fixtures/unit/
 
+      # Includes the cawg-tests.yml checks: built rubrics up to date, unit
+      # fixtures, snapshots, validator cases and the c2pa-rs baseline.
       - name: Tests
         run: PYTHON=python ./run_tests.sh -v
+
+      - name: Example plugin
+        working-directory: examples/plugins/example-music
+        run: |
+          cawg-suite lint-plugin .
+          python -m pytest -v
+
+  package:
+    # Install the package (not the checkout) into a clean environment and test
+    # a copy of the example plugin outside the repository, as a plugin
+    # repository would.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+
+      - name: Install the package
+        run: |
+          python -m venv /tmp/venv
+          /tmp/venv/bin/pip install '.[test]'
+
+      - name: Test a standalone copy of the example plugin
+        run: |
+          cp -r examples/plugins/example-music /tmp/example-music
+          cd /tmp/example-music
+          /tmp/venv/bin/cawg-suite --version
+          /tmp/venv/bin/cawg-suite list --plugin . > /dev/null
+          /tmp/venv/bin/python -m pytest -v

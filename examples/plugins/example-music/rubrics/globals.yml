@@ -1,0 +1,42 @@
+# Helpers for the example music profile. Names start with _music / $music so
+# they can't clash with core helpers added in later cawg-test-suite versions.
+
+variables:
+  "$music_letters": ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"]
+  "$music_digits": ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"]
+  "$music_alnum": ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z", "0", "1", "2", "3", "4", "5", "6", "7", "8", "9"]
+
+expressions:
+  # urn:isrc: values in a metadata entry's dc:identifier (a string or an array).
+  _musicIsrcs: |
+    _musicIsrcsIn([$args[0].value.'dc:identifier'][])
+
+  _musicIsrcsIn: |
+    $args[0][?type(@) == "string" && startsWith(@, "urn:isrc:")]
+
+  # ISRC (ISO 3901): 2-letter country code, 3-character registrant code,
+  # 2-digit year, 5-digit designation; hyphens are optional (CC-XXX-YY-NNNNN).
+  _musicIsrcWellformed: |
+    _musicIsrcCodeOk(substitute(substitute($args[0], "urn:isrc:", ""), "-", ""))
+
+  _musicIsrcCodeOk: |
+    length($args[0]) == `12` &&
+      length(split(left($args[0], 2), "")[?!contains($music_letters, @)]) == `0` &&
+      length(split(mid($args[0], 2, 3), "")[?!contains($music_alnum, @)]) == `0` &&
+      length(split(right($args[0], 7), "")[?!contains($music_digits, @)]) == `0`
+
+  # ISRC values of a metadata entry that are not well formed.
+  _musicBadIsrcs: |
+    _musicIsrcs($args[0])[?!_musicIsrcWellformed(@)]
+
+  # "<manifest>/<label>" of every assertion referenced by an identity
+  # assertion whose signer has the cawg.publisher role.
+  _musicPublisherRefs: |
+    map(_identities()[?contains(value.signer_payload.role || `[]`, "cawg.publisher")], &_musicRefsOf(@))[]
+
+  _musicRefsOf: |
+    map(_refLabelsOf([$args[0].value]), &($args[0].manifest & "/" & @))
+
+  # Refs of metadata entries ($args[0]) that are not in $args[1].
+  _musicUnattested: |
+    $args[0][?!contains($args[1], ref)].ref

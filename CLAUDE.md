@@ -8,23 +8,32 @@ Conformance test code and examples for CAWG specifications: Identity Assertion 1
 Assertion 1.1 (with 1.2-draft recommendations as warnings), and Training and Data Mining 1.1. There are no program
 or policy documents here.
 
-- Rubrics (`rubrics/`) check generator output (crJSON) with YAML + json-formula, in the same
+- Rubrics (`cawg_rubric/rubrics/`) check generator output (crJSON) with YAML + json-formula, in the same
   format as the C2PA Asset Rubrics (c2pa-org/conformance-public `asset-rubrics/`).
 - Validator cases (`validator_tests/<spec>-cases.yml`) check that a validator's crJSON carries the
   expected status codes for each asset in `fixtures/assets/`. A file-level `subject` (identity,
   metadata, manifest) picks which status entries are checked.
+- Profiles, subjects and their composables are declared in `cawg_rubric/suite.yml`; the core test
+  configuration (cases, assets, fixtures, baseline) is `cawg-tests.yml`.
+- Plugins (`docs/plugins.md`) are separate repos with a `cawg-plugin.yml` that extend core profiles:
+  they may add statements under their own prefix and tighten warnings to failures, never weaken.
+  `cawg_rubric/manifest.py` loads manifests and enforces the guardrails; `cawg_rubric/testing.py`
+  holds the checks that `cawg_rubric/pytest_plugin.py` collects for both the core and plugins.
+  `examples/plugins/example-music/` is a fictional example; don't name real organisations there.
 
 ## Commands
 
 ```bash
-./build_rubrics.sh        # composables -> rubrics/*.rubric.yml, then schema validation
-./run_tests.sh            # pytest (args pass through)
-.venv/bin/python -m cawg_rubric.evaluator rubrics/cawg-<spec>.rubric.yml <file.crjson.json>
-.venv/bin/python validator_tests/check_validator.py <crjson-dir> [--baseline ...]
+./build_rubrics.sh        # composables -> cawg_rubric/rubrics/*.rubric.yml, then schema validation
+./run_tests.sh            # pytest tests/ + cawg-tests.yml checks (args pass through)
+(cd examples/plugins/example-music && ../../../.venv/bin/python -m pytest)   # example plugin
+.venv/bin/cawg-suite evaluate <profile-id> <file.crjson.json> [--plugin DIR]
+.venv/bin/cawg-suite check-validator <crjson-dir> [--project DIR] [--baseline ...]
+.venv/bin/cawg-suite build --plugin examples/plugins/example-music
 .venv/bin/python fixtures/unit/make_unit_fixtures.py
 cargo run --release --manifest-path tools/crjson-gen/Cargo.toml -- fixtures/assets fixtures/crjson
 cargo run --release --manifest-path tools/crjson-gen/Cargo.toml --bin make-assets -- fixtures/assets [group]
-UPDATE_SNAPSHOTS=1 ./run_tests.sh tests/test_rubric_fixtures.py
+UPDATE_SNAPSHOTS=1 ./run_tests.sh cawg-tests.yml
 ```
 
 ## Generated identity fixtures
@@ -40,14 +49,15 @@ on every run, so replace both together. See CONTRIBUTING.md "Generated identity 
 - `TODO.md` is the running list of open items (upstream PRs/issues, c2pa-rs deviations, coverage
   gaps). Update it whenever you find, file or resolve something.
 
-- Never hand-edit `rubrics/*.rubric.yml`, `fixtures/unit/*.json` or `fixtures/crjson/`. They are
-  generated, and CI checks the first two are up to date.
-- Statement IDs are `<spec>:<snake_case>` (`identity:`, `metadata:`, `training-mining:`), and the prefix must match the
-  rubric's category in `tests/conftest.py`. Every statement has `specSection` and
+- Never hand-edit `cawg_rubric/rubrics/*.rubric.yml`, `fixtures/unit/*.json`, `fixtures/crjson/` or a
+  plugin's `build/`. They are generated, and the tests/CI check they are up to date.
+- Statement IDs are `<spec>:<snake_case>` (`identity:`, `metadata:`, `training-mining:`).
+  Statement IDs, subjects and the public helpers listed in docs/plugins.md are the plugin API:
+  breaking one needs a minor version bump (`cawg_rubric/__init__.py`). Every statement has `specSection` and
   `reportText` (`true` and `false` keys only; the schema allows nothing else). Statements return the
   offending `ref` values (`<manifest label>/<assertion label>`) with `failIfMatched` or `warnIfMatched`.
-- Every statement needs a `fixtures/unit/<spec>/<rule>-pos.json` / `-neg.json` pair. `tests/test_rubric_units.py`
-  enforces this.
+- Every statement needs a `fixtures/unit/<spec>/<rule>-pos.json` / `-neg.json` pair. The
+  `unit[...]` checks collected from `cawg-tests.yml` enforce this.
 - json-formula gotchas:
   - `"text"` is a string literal, and `'claim.v2'` quotes an identifier.
   - Named expressions get their arguments only through the global `$args` array.
