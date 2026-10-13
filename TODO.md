@@ -56,7 +56,7 @@ Still open in c2pa-rs; these need an issue or a decision first:
 
 ## Coverage gaps in this suite
 
-- [ ] Extend the c2pa-rs generator branch (`cawg/conformance-fixtures`) with the remaining gaps below, then re-import (README "Generated identity fixtures").
+- [ ] Extend the c2pa-rs generator branch (`cawg/conformance-fixtures`) with the remaining gaps below, then re-import (CONTRIBUTING.md "Generated identity fixtures").
 
 - [ ] Identity: still no fixtures (even on the generator branch) for:
   - X.509 time stamp codes

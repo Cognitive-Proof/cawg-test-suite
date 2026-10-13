@@ -33,7 +33,7 @@ UPDATE_SNAPSHOTS=1 ./run_tests.sh tests/test_rubric_fixtures.py
 (https://github.com/mrappard/c2pa-rs-text-support/tree/cawg/conformance-fixtures).
 The X.509 trust-model cases depend on `tools/crjson-gen/generated_trust_anchor.pem` also being in
 the CAWG `trust_anchors` of `tools/crjson-gen/cawg_test_settings.toml`; the generator mints a new root
-on every run, so replace both together. See README "Generated identity fixtures".
+on every run, so replace both together. See CONTRIBUTING.md "Generated identity fixtures".
 
 ## Conventions
 

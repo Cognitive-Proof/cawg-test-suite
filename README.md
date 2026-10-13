@@ -1,342 +1,147 @@
 # cawg-test-suite
 
-Test code and examples for checking implementations against the
-[Creator Assertions Working Group](https://cawg.io/) specifications.
+An open conformance test suite for the [Creator Assertions Working Group (CAWG)](https://cawg.io/)
+specifications: the identity, metadata and training-and-data-mining assertions that
+extend [C2PA](https://c2pa.org/) Content Credentials.
 
-Specifications covered:
+The CAWG specifications don't come with test cases. This suite turns their
+requirements into checks you can run against your own implementation. It works
+whether your product **writes** CAWG assertions (a generator) or **reads and
+validates** them (a validator).
 
-| Specification | Rubric | Validator cases |
+> **Status: early (0.1.0).** This is an independent project. It is not an official
+> CAWG, DIF or C2PA conformance program. Expect changes as the specifications and
+> the suite evolve. Spec questions and disagreements with the suite are welcome as
+> [issues](https://github.com/Cognitive-Proof/cawg-test-suite/issues).
+
+## What's covered
+
+| Specification | Generator checks (rubric) | Validator cases |
 | --- | --- | --- |
-| [Identity Assertion 1.3](https://cawg.io/identity/1.3/): X.509 (`cawg.x509.cose`) and identity claims aggregation (`cawg.identity_claims_aggregation`) | [`cawg-identity-1.3.rubric.yml`](rubrics/cawg-identity-1.3.rubric.yml) | [`identity-1.3-cases.yml`](validator_tests/identity-1.3-cases.yml) |
-| [Metadata Assertion 1.1](https://cawg.io/metadata/1.1/), plus 1.2-draft recommendations as warnings | [`cawg-metadata-1.1.rubric.yml`](rubrics/cawg-metadata-1.1.rubric.yml) | [`metadata-1.1-cases.yml`](validator_tests/metadata-1.1-cases.yml) |
-| [Training and Data Mining Assertion 1.1](https://cawg.io/training-and-data-mining/1.1/) | [`cawg-training-mining-1.1.rubric.yml`](rubrics/cawg-training-mining-1.1.rubric.yml) | [`training-mining-1.1-cases.yml`](validator_tests/training-mining-1.1-cases.yml) |
+| [Identity Assertion 1.3](https://cawg.io/identity/1.3/): X.509 (`cawg.x509.cose`) and identity claims aggregation (`cawg.identity_claims_aggregation`) | 26 statements: [`cawg-identity-1.3.rubric.yml`](rubrics/cawg-identity-1.3.rubric.yml) | 49 cases: [`identity-1.3-cases.yml`](validator_tests/identity-1.3-cases.yml) |
+| [Metadata Assertion 1.1](https://cawg.io/metadata/1.1/), with 1.2-draft recommendations as warnings | 9 statements: [`cawg-metadata-1.1.rubric.yml`](rubrics/cawg-metadata-1.1.rubric.yml) | 8 cases: [`metadata-1.1-cases.yml`](validator_tests/metadata-1.1-cases.yml) |
+| [Training and Data Mining Assertion 1.1](https://cawg.io/training-and-data-mining/1.1/) | 11 statements: [`cawg-training-mining-1.1.rubric.yml`](rubrics/cawg-training-mining-1.1.rubric.yml) | 4 cases: [`training-mining-1.1-cases.yml`](validator_tests/training-mining-1.1-cases.yml) |
 
-Program documents (policy, process, governance) live elsewhere. This repo holds
-only what is needed to run tests. Open items are tracked in [TODO.md](TODO.md).
+[docs/coverage.md](docs/coverage.md) lists what every statement and case checks, and
+what can't be checked.
 
-## What it tests
+## How it works
 
-| Target | How | Where |
-| --- | --- | --- |
-| **Generators**: products that write CAWG assertions | A rubric evaluates the crJSON of an asset the generator produced | [`rubrics/`](rubrics/) |
-| **Validators**: products that read CAWG assertions | The validator reads known-good and known-bad assets; its crJSON must carry the expected `cawg.*` status codes | [`validator_tests/`](validator_tests/) |
+Everything runs on **crJSON**, the JSON report format of the C2PA conformance
+program. Any C2PA validator that can produce crJSON can be tested.
 
-Both work on **crJSON**, the JSON report format used by the C2PA conformance
-program. The rubric format (YAML + [json-formula](https://opensource.adobe.com/json-formula/))
-is the same as the C2PA Asset Rubrics, so the same tooling can run either.
+- **Generators:** produce an asset, get its crJSON, and evaluate it against a
+  rubric. Rubrics use the same YAML + [json-formula](https://opensource.adobe.com/json-formula/)
+  format as the C2PA Asset Rubrics, so the same tooling runs both.
+- **Validators:** run your validator over the signed test assets in
+  [`fixtures/assets/`](fixtures/assets/). Each case says which `cawg.*` status codes
+  must, or must not, appear.
+
+The test assets include valid and deliberately broken examples of each assertion.
+They are signed with the c2pa-rs test credentials, and include certificates minted
+for the trust-model cases.
 
 ## Quick start
 
+Requires Python 3.10 or later.
+
 ```bash
+git clone https://github.com/Cognitive-Proof/cawg-test-suite.git
+cd cawg-test-suite
 python3 -m venv .venv
 .venv/bin/pip install -r requirements.txt
 ./run_tests.sh
 ```
 
-### Check a generator's asset
+### Test a generator
 
-Produce crJSON for the asset with any C2PA validator, then:
+Produce crJSON for your asset with any C2PA validator, then:
 
 ```bash
 .venv/bin/python -m cawg_rubric.evaluator rubrics/cawg-identity-1.3.rubric.yml my-asset.crjson.json
-.venv/bin/python -m cawg_rubric.evaluator rubrics/cawg-metadata-1.1.rubric.yml my-asset.crjson.json
-.venv/bin/python -m cawg_rubric.evaluator rubrics/cawg-training-mining-1.1.rubric.yml my-asset.crjson.json
 ```
 
-The report groups every statement under `true`, `false` or `warning`. The exit
-status is 1 if any statement is `false`.
+Use `cawg-metadata-1.1.rubric.yml` or `cawg-training-mining-1.1.rubric.yml` for the
+other assertions. The report groups every statement under `true`, `false` or
+`warning`, and the exit status is 1 if any statement is `false`.
 
-### Check a validator
+### Test a validator
 
-Run the validator over every asset in [`fixtures/assets/`](fixtures/assets/) and
-write its crJSON to a directory with the same layout, with `.jpg` replaced by
-`.crjson.json`. Then:
-
-```bash
-.venv/bin/python validator_tests/check_validator.py path/to/validator-output
-```
-
-This runs every `validator_tests/*-cases.yml` file. Use `--cases` to pick specific ones.
-
-## Repo layout
-
-```
-rubrics/
-  composables/          source statements (edit these)
-  cawg-*.rubric.yml     built rubrics (generated by ./build_rubrics.sh)
-cawg_rubric/            evaluator, builder and rubric-schema validator (Python)
-validator_tests/
-  *-cases.yml           asset -> expected status codes, one file per spec
-  check_validator.py    compares a validator's crJSON to the cases
-  baselines/            known failures of reference validators
-fixtures/
-  assets/               signed test JPGs (see NOTICE)
-    identity/, x509/, ica/        generated by the c2pa-rs branch cawg/conformance-fixtures
-    metadata/, training-mining/   built by tools/crjson-gen make-assets
-  crjson/               crJSON for each asset from c2pa-rs, plus rubric snapshots (*.rubric.json)
-  unit/<spec>/          hand-built crJSON, one passing and one failing file per rubric statement
-tools/crjson-gen/       Rust tools: crjson-gen (assets -> crJSON) and make-assets (signs metadata / TDM assets)
-tests/                  pytest suites
-```
-
-## Rubric coverage (Identity Assertion 1.3)
-
-Statement IDs are `identity:<name>`. Statements marked *warn* report a warning
-rather than a failure.
-
-| Statement | Spec | Checks |
-| --- | --- | --- |
-| `identity_assertion_present` | §5.1 | At least one `cawg.identity` assertion exists |
-| `assertion_label` | §5.1, §5.3 | Label is `cawg.identity` or `cawg.identity__N` |
-| `required_fields` | §5.2 | `signer_payload` (with `referenced_assertions` and `sig_type`), `signature` and `pad1` are present |
-| `referenced_assertions_nonempty` | §5.1.1 | `referenced_assertions` has at least one entry |
-| `referenced_assertions_resolve` | §5.1.1, §7.1 | Every reference matches a label and hash listed in a claim in the store |
-| `referenced_assertions_in_own_claim` (warn) | §5.1.1 | References resolve within the assertion's own claim |
-| `no_duplicate_references` | §5.1.1, §7.1 | No assertion is referenced twice |
-| `exactly_one_hard_binding` | §5.1.1, §7.1 | Exactly one hard-binding reference |
-| `hard_binding_is_claims` | §5.1.1, §7.1 | The hard binding is the one in the assertion's own claim |
-| `no_self_reference` | §5.1.1 | The assertion does not reference itself |
-| `sig_type_known` (warn) | §5.1, §8 | `sig_type` is defined in 1.3 |
-| `role_wellformed` | §5.1.2 | `role`, if present, is a non-empty array of non-empty strings |
-| `role_cawg_namespace` (warn) | §5.1.2, §5.3 | `cawg.*` roles are ones the spec defines |
-| `pads_zero` | §6.2, §7.1 | `pad1` and `pad2` are all zero bytes |
-| `no_removed_fields` (warn) | §5.1 | No `expected_partial_claim`, `expected_claim_generator` or `expected_countersigners` |
-| `x509_signature_decodable` | §8.2.1 | `cawg.x509.cose` signature is a COSE signature with a certificate |
-| `x509_algorithm_allowed` | §8.2.1, §8.2.2 | Algorithm is in the C2PA §13.2 list |
-| `ica_credential_visible` (warn) | §8.1.2 | The ICA credential is visible in crJSON (otherwise the ICA checks are skipped) |
-| `ica_algorithm_allowed` | §8.1.4, §8.1.5 | Algorithm is in the C2PA §13.2 list |
-| `ica_issuer_did` | §8.1.4, §8.1.5 | Issuer is a DID |
-| `ica_valid_from_present` | §8.1.2.4 | `validFrom` / `issuanceDate` is present |
-| `ica_verified_identities_nonempty` | §8.1.2.5 | `verifiedIdentities` is a non-empty array |
-| `ica_verified_identity_required_fields` | §8.1.2.5 | Each entry has `type`, `provider.name` and `verifiedAt` |
-| `ica_verified_identity_type_fields` | §8.1.2.5 | `name` / `username` / `address` / `uri` is present for the document, social media, wallet and web site types |
-| `validation_no_failures` | §7.2, §8.1.5, §8.2.2 | The validator reported no `cawg.*` failure codes |
-| `validation_status_reported` (warn) | §7.2 | The validator reported `cawg.identity.well-formed` or `cawg.identity.trusted` |
-
-### Not covered by the rubric
-
-- **Signatures and trust.** Rubrics read crJSON. They cannot verify signatures,
-  certificate chains, time stamps or revocation. Those are validator
-  responsibilities, covered by the validator cases.
-- **ICA credential fields that crJSON leaves out.** crJSON exposes only
-  `issuer`, `validFrom`, `validUntil` and `verifiedIdentities` from the
-  credential. `@context`, `type`, `issuanceDate` and
-  `credentialSubject.c2paAsset` cannot be checked.
-- **Byte-level placeholder sizing** (§6.2).
-
-## Rubric coverage (Metadata Assertion 1.1)
-
-Statement IDs are `metadata:<name>`. The metadata spec has no numbered sections, so references use
-section names. 1.2-draft statements are warnings only.
-
-| Statement | Spec | Checks |
-| --- | --- | --- |
-| `metadata_assertion_present` | 1.1 Assertion definition | At least one `cawg.metadata` assertion exists |
-| `assertion_label` | 1.1 Assertion definition | Label is `cawg.metadata` or `cawg.metadata__N` |
-| `json_ld_object` | 1.1; C2PA metadata common requirements | Content is a JSON object |
-| `context_present` | 1.1; C2PA metadata common requirements | `@context` is present (object, URL string, or array of those) |
-| `terms_defined_in_context` (warn) | 1.1; C2PA metadata common requirements | Every top-level field uses a prefix or term from `@context`, or is an absolute IRI. JSON-LD drops fields that fail this. Skipped for remote-only contexts |
-| `context_iris_absolute` (warn) | 1.1 | Namespace IRIs in `@context` are absolute |
-| `validation_no_failures` | 1.1 (C2PA Appendix B SHALL NOT apply) | The validator reported no failure codes for the metadata assertion |
-| `gathered_referenced_by_identity` (warn) | 1.2-draft Use with identity assertion | Gathered metadata is referenced by an identity assertion in the same manifest |
-| `urn_values_wellformed` (warn) | 1.2-draft Use with media industry identifiers | Top-level `urn:` values have the form `urn:<nid>:<nss>` |
-
-Not covered:
-- **JSON vs CBOR storage.** crJSON doesn't record whether the assertion was a JSON content box, as the spec requires.
-- **Remote `@context` documents.** These aren't fetched.
-- **Vocabulary choice.** The 1.2 draft recommends established namespaces such as Dublin Core; that's a judgement call, not a check.
-
-## Rubric coverage (Training and Data Mining Assertion 1.1)
-
-Statement IDs are `training-mining:<name>`. The spec has no numbered sections, so references use
-section names.
-
-| Statement | Spec | Checks |
-| --- | --- | --- |
-| `tdm_assertion_present` | Assertion definition | At least one `cawg.training-mining` assertion exists |
-| `assertion_label` | Overview | Label is `cawg.training-mining` or `cawg.training-mining__N` |
-| `entries_present` | Schema and example | The assertion is a map containing an `entries` map. The 1.0 CDDL omitted `entries`, and 1.1 says it SHOULD be used; this suite follows the 1.1 CDDL and treats it as required |
-| `entries_nonempty` | Overview | `entries` has one or more entries |
-| `use_values_valid` | Overview; Schema | Every entry's `use` is `allowed`, `notAllowed` or `constrained` |
-| `constraint_info_wellformed` | Schema | `constraint_info`, if present, is a non-empty string |
-| `cawg_keys_defined` | Overview | `cawg.*` entry keys are the four defined ones; the prefix is reserved |
-| `custom_keys_label_syntax` | Overview; C2PA Namespacing | Custom keys are entity-specific labels: two or more components matching `[a-zA-Z0-9][a-zA-Z0-9_-]*` |
-| `constraints_info_spelling` (warn) | Overview vs Schema | No entry uses `constraints_info`, the prose spelling of `constraint_info` |
-| `legacy_c2pa_names` (warn) | Overview (notice to implementers) | No C2PA 1.x `c2pa.training-mining` label or `c2pa.*` entry keys |
-| `validation_no_failures` | Assertion definition | The validator reported no failure codes for the assertion |
-
-Not covered:
-- **Consumer behaviour.** Treating `constrained` as `notAllowed` can't be checked from crJSON.
-- **IANA TLD check.** Whether a custom key's first component is a valid IANA top-level domain isn't checked.
-- **String length.** The `max-tstr-length` bound on `constraint_info` isn't checked.
-
-Both real-world Adobe ICA assets carry a legacy `c2pa.training-mining` assertion alongside
-`cawg.training-mining`, so they get the `legacy_c2pa_names` warning.
-
-## Validator cases
-
-Each case names an asset and the codes that must, or must not, appear for it.
-A case file sets which status entries a case looks at (`subject`): the identity
-assertion, the metadata assertion, or the whole manifest.
-
-[`identity-1.3-cases.yml`](validator_tests/identity-1.3-cases.yml) has 49 cases:
-- 13 for identity assertion structure and the validation procedure (§5, §7.1, §7.2)
-- 7 for X.509 signatures and the trust model (§8.2)
-- 29 for ICA validation (§8.1.5)
-
-Every identity case also checks one consistency rule: a validator must not
-report `cawg.identity.well-formed` or `cawg.identity.trusted` for an assertion
-that also has a `cawg.*` failure. §7.2 defines those success codes as "validated",
-and §7.1, §8.1.5 and §8.2.2 failures reject the assertion. The one exception is
-`cawg.x509.credential.untrusted`. §7.2 defines `well-formed` as "validated, no root of
-trust identified", which is exactly an untrusted chain, so the spec is ambiguous there.
-
-16 of the identity cases use assets from the c2pa-rs generator branch (see
-[Generated identity fixtures](#generated-identity-fixtures)). Their X.509 trust-model cases
-depend on `tools/crjson-gen/generated_trust_anchor.pem`, which `cawg_test_settings.toml`
-includes as a CAWG trust anchor. Configure a validator under test the same way.
-
-[`metadata-1.1-cases.yml`](validator_tests/metadata-1.1-cases.yml) has 8 cases. The
-metadata spec defines no status codes, so these check that metadata never causes
-a failure:
-- Fields outside the `c2pa.metadata` allowed list must not be rejected.
-- Gathered metadata, multiple instances, undefined prefixes and media
-  identifiers must all validate.
-- An identity assertion that attests to the metadata must validate.
-
-[`training-mining-1.1-cases.yml`](validator_tests/training-mining-1.1-cases.yml) has 4 cases. The
-spec defines no status codes either, so these check that valid assertions never cause a failure:
-all four keys, a custom key, a constrained entry, and identity attestation. The invalid
-training-mining assets exist only for the generator rubric.
-
-### c2pa-rs 0.91.2 baseline
-
-The crJSON in `fixtures/crjson/` comes from c2pa-rs 0.91.2. It passes 44 of 61
-cases, including all metadata and training-mining cases. The 17 failures are all identity cases, listed with reasons in
-[`baselines/c2pa-rs-0.91.2.yml`](validator_tests/baselines/c2pa-rs-0.91.2.yml):
-- `cawg.identity.cbor.invalid` is not reported for malformed CBOR.
-- `cawg.identity.well-formed` is reported alongside `cawg.*` failures (5 structural cases and 1 X.509 case).
-- References into an ingredient claim are reported as `cawg.identity.assertion.mismatch`, so the
-  incorrect-hard-binding check is never reached.
-- Statuses for a second identity assertion use the first one's label (`cawg.identity`, not `cawg.identity__1`).
-- `cawg.x509.algorithm.unsupported` uses url `Cose_Sign1` instead of the assertion label.
-- The interim trust model's certificate-policy rule isn't enforced: a mailbox-validated certificate is trusted.
-- ICA problems:
-  - `cawg.ica.invalid_issuer` is reported where `cawg.ica.did_unsupported_method` is expected.
-  - Empty or invalid `verifiedIdentities` are reported as `cawg.ica.invalid_verifiable_credential`, not
-    `cawg.ica.verified_identities.*`.
-  - A `cawg.crypto_wallet` entry without `address` is accepted.
-  - `cawg.ica.revocation.unsupported` is not reported.
-
-CI requires the baseline to match exactly. A new failure, or a listed failure
-that now passes, fails the build.
-
-Fixes for 15 of these are proposed upstream (contentauth/c2pa-rs#2836 to #2843; see
-[TODO.md](TODO.md)). With all eight applied to c2pa-rs `main`, 59 of 61 cases pass.
-
-`cawg.ica.untrusted_issuer` is accepted in any category, even though the spec's table lists it as a
-failure. An untrusted ICA issuer concerns only the identity assertion and shouldn't fail the whole
-C2PA Manifest; c2pa-rs reports it as informational and withholds `cawg.ica.credential_valid`.
-
-## Regenerating fixtures
-
-Rebuild crJSON from the assets. This needs Rust 1.96; `tools/crjson-gen/rust-toolchain.toml` pins it.
-
-```bash
-cargo run --release --manifest-path tools/crjson-gen/Cargo.toml -- fixtures/assets fixtures/crjson
-UPDATE_SNAPSHOTS=1 ./run_tests.sh tests/test_rubric_fixtures.py
-```
-
-Then update `validator_tests/baselines/` if the reference validator's results changed.
-
-The metadata and training-mining assets are signed by `make-assets` with the c2pa-rs test
-certificates, offline. Signatures and IDs change on every run, so only rebuild a group when one of
-its recipes changes:
-
-```bash
-cargo run --release --manifest-path tools/crjson-gen/Cargo.toml --bin make-assets -- fixtures/assets training-mining
-```
-
-c2pa-rs refuses to sign a metadata assertion without `@context`, so that case only has a hand-built unit fixture.
-
-### Generated identity fixtures
-
-`fixtures/assets/{identity,x509,ica}/` come from an ignored test on the c2pa-rs branch
-[`cawg/conformance-fixtures`](https://github.com/mrappard/c2pa-rs-text-support/tree/cawg/conformance-fixtures)
-(commit `e52bd0a`, `sdk/src/identity/tests/conformance_fixtures/`). It uses test-only hooks in the
-identity assertion builder to produce invalid assertions, and mints certificates for the trust-model
-cases. To regenerate:
-
-```bash
-CAWG_FIXTURES_OUT=/tmp/cawg-fixtures cargo +1.96.0 test -p c2pa --lib \
-  generate_cawg_conformance_fixtures -- --ignored --nocapture
-```
-
+Run your validator over every asset in [`fixtures/assets/`](fixtures/assets/), and
+write its crJSON to a directory with the same layout (`.jpg` becomes `.crjson.json`).
 Then:
-1. Copy `{identity,x509,ica}/*.jpg` into `fixtures/assets/`.
-2. Copy `index.json` to `validator_tests/c2pa-rs-generated-index.json`.
-3. Replace `tools/crjson-gen/generated_trust_anchor.pem`, and the matching certificate at the end of
-   the CAWG `trust_anchors` in `cawg_test_settings.toml`, with the new `x509/trust_anchor.pem`.
-   It's a new root on every run.
-4. Rebuild crjson-gen and regenerate the crJSON.
-
-Rebuild the unit fixtures after editing `fixtures/unit/make_unit_fixtures.py`:
 
 ```bash
-.venv/bin/python fixtures/unit/make_unit_fixtures.py
+.venv/bin/python validator_tests/check_validator.py path/to/your-output
 ```
 
-## Adding or changing a rubric statement
+For the X.509 trust-model cases, configure
+[`tools/crjson-gen/generated_trust_anchor.pem`](tools/crjson-gen/generated_trust_anchor.pem)
+as a CAWG trust anchor in your validator.
 
-1. Edit or add a statement in `rubrics/composables/<spec>-*.yml`. Shared helpers go in `globals.yml`.
-   A new spec also needs a recipe in `cawg_rubric/build.py` and an entry in `tests/conftest.py`.
-2. Run `./build_rubrics.sh`. This rebuilds and schema-validates the rubric.
-3. Add a `-pos` / `-neg` pair to `fixtures/unit/make_unit_fixtures.py` and regenerate the fixtures.
-4. Run `./run_tests.sh`, then refresh snapshots with `UPDATE_SNAPSHOTS=1` if outcomes changed on purpose.
+## Results: c2pa-rs
 
-## Spec issues found
+The reference results in [`fixtures/crjson/`](fixtures/crjson/) come from
+[c2pa-rs](https://github.com/contentauth/c2pa-rs) 0.91.2.
+- It passes **44 of 61** validator cases, including every metadata and
+  training-mining case.
+- Each failure is listed with its reason in
+  [`validator_tests/baselines/c2pa-rs-0.91.2.yml`](validator_tests/baselines/c2pa-rs-0.91.2.yml).
+- CI requires that baseline to match exactly.
 
-### Identity assertion
+Fixes for those failures have been proposed upstream:
 
-Checked against decentralized-identity/cawg-identity-assertion at `8851770` (1.3 ratified):
+| PR | Fix |
+| --- | --- |
+| [contentauth/c2pa-rs#2836](https://github.com/contentauth/c2pa-rs/pull/2836) | Report each identity assertion under its own label |
+| [contentauth/c2pa-rs#2837](https://github.com/contentauth/c2pa-rs/pull/2837) | Don't report `well-formed` for an assertion that failed validation |
+| [contentauth/c2pa-rs#2838](https://github.com/contentauth/c2pa-rs/pull/2838) | Report `cawg.ica.did_unsupported_method` |
+| [contentauth/c2pa-rs#2839](https://github.com/contentauth/c2pa-rs/pull/2839) | Report `cawg.ica.verified_identities.missing` / `.invalid` |
+| [contentauth/c2pa-rs#2840](https://github.com/contentauth/c2pa-rs/pull/2840) | Report `cawg.ica.revocation.unsupported` |
+| [contentauth/c2pa-rs#2841](https://github.com/contentauth/c2pa-rs/pull/2841) | Report X.509 statuses against the identity assertion |
+| [contentauth/c2pa-rs#2842](https://github.com/contentauth/c2pa-rs/pull/2842) | Report `cawg.identity.cbor.invalid` instead of failing to load the manifest |
+| [contentauth/c2pa-rs#2843](https://github.com/contentauth/c2pa-rs/pull/2843) | Resolve references into ingredient claims; report `hard_binding_incorrect` |
+| [contentauth/c2pa-rs#2844](https://github.com/contentauth/c2pa-rs/pull/2844) | Enforce type-specific verified-identity fields; regenerate the ICA fixtures |
 
-- §7.2 lists `cawg.identity.network_traffic_blocked`, while the credential-types section says
-  `cawg.identity.network_traffic_required`. A fix is open as decentralized-identity/cawg-identity-assertion#273.
-- The published ICA JSON schemas (`ica/schema/vc1.1/` and `vc2.0/`, also live on cawg.io) point every
-  `$ref` at `#/definitions/...`, but the definitions are under `$defs`. 2020-12 validators can't
-  resolve them. Fix proposed in decentralized-identity/cawg-identity-assertion#287.
-- Those schemas also disagree with the spec text:
-  - `c2paAsset.role` is a single string from a fixed enum. The CDDL makes it an array, and other values are allowed.
-  - `cawg.social_media` requires `uri`, which the spec only RECOMMENDs.
-  - `cawg.web_site` doesn't require `provider`, which the spec requires for every entry.
-  - `referenced_assertions` entries require only `hash`.
+With the first eight applied, c2pa-rs passes 59 of 61 cases, and #2844 fixes one more.
+The remaining case, the interim trust model's certificate policies, is raised in
+[contentauth/c2pa-rs#2845](https://github.com/contentauth/c2pa-rs/issues/2845).
 
-  The role, `uri` and `referenced_assertions` fixes are also in #287. `cawg.web_site` `provider` is raised there as
-  a question, because the spec's own example omits it.
-- The §8.1.3 example has a `cawg.crypto_wallet` entry with `username` and no `address`, so it fails the
-  spec's own rule and schema. Fix proposed in decentralized-identity/cawg-identity-assertion#288.
-- §7.2 says a status code's `url` MUST be the identity assertion's label. C2PA §15.2 and c2pa-rs use a
-  JUMBF URI. These tests accept either.
+## Findings in the specifications
 
-### Metadata assertion
+Turning the specs into tests surfaced a number of spec bugs and ambiguities. They
+have been reported upstream:
 
-Checked against decentralized-identity/cawg-metadata-assertion at `64069e0` (1.2 draft):
+| Specification | Reported |
+| --- | --- |
+| Identity Assertion | Status-code name mismatch ([#273](https://github.com/decentralized-identity/cawg-identity-assertion/pull/273)) · broken ICA JSON schemas ([#287](https://github.com/decentralized-identity/cawg-identity-assertion/pull/287)) · crypto-wallet example missing `address` ([#288](https://github.com/decentralized-identity/cawg-identity-assertion/pull/288)) · scope of identity-assertion failures ([#289](https://github.com/decentralized-identity/cawg-identity-assertion/issues/289)) · `well-formed` vs `credential.untrusted` ([#290](https://github.com/decentralized-identity/cawg-identity-assertion/issues/290)) · status `url` format ([#291](https://github.com/decentralized-identity/cawg-identity-assertion/issues/291)) |
+| Metadata Assertion | Invalid JSON in the media-identifier example ([#14](https://github.com/decentralized-identity/cawg-metadata-assertion/pull/14)) |
+| Training and Data Mining Assertion | CDDL that matches no assertion, a broken example, and `constraint_info` naming ([#11](https://github.com/decentralized-identity/cawg-training-and-data-mining-assertion/pull/11)) |
 
-- The media industry identifier example isn't valid JSON: it has trailing commas after the `@context`
-  entry and after `dc:type`. Fix proposed in decentralized-identity/cawg-metadata-assertion#14.
+Where the spec is ambiguous, the suite says how it decides. For example, it accepts
+either a label or a JUMBF URI as a status `url`, and accepts
+`cawg.ica.untrusted_issuer` in any category, because an untrusted ICA issuer
+shouldn't fail the whole C2PA Manifest. See [docs/coverage.md](docs/coverage.md).
 
-### Training and data mining assertion
+## Roadmap
 
-Checked against decentralized-identity/cawg-training-and-data-mining-assertion at `e203ac5` (1.1 ratified).
-Fixes for all three issues are proposed in decentralized-identity/cawg-training-and-data-mining-assertion#11:
+- **Draft specs we're tracking:** identity 1.3 [+vlei](https://cawg.io/identity/1.3-draft+vlei/),
+  [+vc-vp](https://cawg.io/identity/1.3-draft+vc-vp/) and
+  [+governance](https://cawg.io/identity/1.3-draft+governance/).
+- **Specs not yet covered:** the Organizational Identity Profile and the Consent and
+  Endorsement drafts.
+- **Coverage gaps:** X.509 time stamps and revocation, and ICA revocation lists.
 
-- **The CDDL rejects every assertion.** `training-mining-map` refers to `$training-mining-entries-map`
-  and `$training-mining-map-entry`, but those rules are defined without the `$`. An undefined socket
-  matches nothing.
-  - With the `cddl` 0.10.7 validator, the spec's own example and the assertion c2pa-rs writes both fail.
-  - With the two `$` signs removed, both pass.
-- **The CBOR diagnostic example doesn't parse.** The `entries` map has no `{ }` around it.
-- **Field name mismatch.** The prose says `constraints_info`, while the CDDL and example use `constraint_info`.
+The full list is in [TODO.md](TODO.md).
+
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for:
+- development setup
+- adding rubric statements and validator cases
+- regenerating fixtures
+
+Results from other validators are especially welcome.
 
 ## License
 
@@ -344,9 +149,10 @@ Licensed under either of the [MIT License](LICENSE-MIT) or the
 [Apache License, Version 2.0](LICENSE-APACHE), at your option.
 
 Third-party material keeps its own licence; see [NOTICE](NOTICE):
-- Test images, certificates and keys from c2pa-rs are under MIT. The fixtures derived from them are listed in NOTICE.
-- The rubric evaluator, builder, rubric validator and rubric schema are adapted from the C2PA Conformance Task Force's
-  [conformance-public](https://github.com/c2pa-org/conformance-public) repository, under CC BY 4.0.
+- Test images, certificates and keys from c2pa-rs (MIT).
+- The rubric evaluator, builder, rubric validator and schema, adapted from the C2PA
+  Conformance Task Force's [conformance-public](https://github.com/c2pa-org/conformance-public)
+  repository (CC BY 4.0).
 
-Unless you explicitly state otherwise, any contribution you submit for inclusion is licensed as above,
-without any additional terms or conditions.
+CAWG, C2PA, Content Credentials and related names belong to their respective
+owners. Their use here doesn't imply endorsement.
