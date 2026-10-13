@@ -25,7 +25,7 @@ Open items for cawg-test-suite. Add new items here. Remove items, or move them t
 
 These are deviations found by the validator cases; they're listed in `validator_tests/baselines/c2pa-rs-0.91.2.yml`.
 
-Fix PRs opened against contentauth/c2pa-rs (one branch and worktree each, `~/Documents/GitHub/c2pa-rs-cawg-*`). All eight together take the suite from 44 to 59 of 61; #2844 adds one more (measured on a local merge of upstream `main` plus the eight branches):
+Fix PRs opened against contentauth/c2pa-rs (one branch each on mrappard/c2pa-rs-text-support). All eight together take the suite from 44 to 59 of 61; #2844 adds one more (measured on a local merge of upstream `main` plus the eight branches):
 
 - [ ] contentauth/c2pa-rs#2836: report each identity assertion under its own label (`identity_multiple_assertions`)
 - [ ] contentauth/c2pa-rs#2837: no `cawg.identity.well-formed` alongside §7.1 or signature failures (`assertion_mismatch`, `assertion_duplicate`, `hard_binding_missing`, `pad1_invalid`, `pad2_invalid`, `x509_outside_validity`)
@@ -103,8 +103,7 @@ Still open in c2pa-rs; these need an issue or a decision first:
 
 ## Housekeeping
 
-- [ ] Rename the local folder `~/Github/cawg-conformance` to `cawg-test-suite`, to match the GitHub repo.
-- [ ] Keep `cawg_rubric/` engine code in sync with c2pa-org/conformance `asset-rubrics/` (adapted from `b6d5a1b`).
+- [ ] Keep `cawg_rubric/` engine code in sync with c2pa-org/conformance-public `asset-rubrics/` (adapted from `f22ce0a`, CC BY 4.0; keep the NOTICE attribution).
 - [ ] When the metadata spec 1.2 is ratified, promote the 1.2-draft warnings to the rules the final text makes normative, and rename the rubric.
 
 ## Done

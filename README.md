@@ -337,3 +337,16 @@ Fixes for all three issues are proposed in decentralized-identity/cawg-training-
   - With the two `$` signs removed, both pass.
 - **The CBOR diagnostic example doesn't parse.** The `entries` map has no `{ }` around it.
 - **Field name mismatch.** The prose says `constraints_info`, while the CDDL and example use `constraint_info`.
+
+## License
+
+Licensed under either of the [MIT License](LICENSE-MIT) or the
+[Apache License, Version 2.0](LICENSE-APACHE), at your option.
+
+Third-party material keeps its own licence; see [NOTICE](NOTICE):
+- Test images, certificates and keys from c2pa-rs are under MIT. The fixtures derived from them are listed in NOTICE.
+- The rubric evaluator, builder, rubric validator and rubric schema are adapted from the C2PA Conformance Task Force's
+  [conformance-public](https://github.com/c2pa-org/conformance-public) repository, under CC BY 4.0.
+
+Unless you explicitly state otherwise, any contribution you submit for inclusion is licensed as above,
+without any additional terms or conditions.

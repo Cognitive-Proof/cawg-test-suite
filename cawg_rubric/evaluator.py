@@ -4,9 +4,11 @@ Evaluates a built rubric (YAML + json-formula) against crJSON and returns a
 report grouped by outcome (true / false / warning) and statement category.
 
 Adapted from the C2PA Conformance Task Force asset-rubric evaluator
-(c2pa-org/conformance, asset-rubrics/c2pa_conformance_rubric_evaluator.py at
-commit b6d5a1b). The json-formula engine setup is unchanged; the C2PA-specific
-provenance DAG, signal pruning and spec-version handling were removed.
+(https://github.com/c2pa-org/conformance-public,
+asset-rubrics/c2pa_conformance_rubric_evaluator.py at commit f22ce0a), used
+under CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/). The json-formula
+engine setup is unchanged; the C2PA-specific provenance DAG, signal pruning and
+spec-version handling were removed. See NOTICE.
 """
 
 import argparse

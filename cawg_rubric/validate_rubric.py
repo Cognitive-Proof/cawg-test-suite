@@ -2,8 +2,10 @@
 """
 validate_rubric.py - Validate rubric YAML files against the asset-rubrics JSON Schema.
 
-Copied from c2pa-org/conformance asset-rubrics/validate_rubric.py (commit b6d5a1b);
-only the schema location and --all directory changed.
+Adapted from https://github.com/c2pa-org/conformance-public
+asset-rubrics/validate_rubric.py (commit f22ce0a), used under CC BY 4.0
+(https://creativecommons.org/licenses/by/4.0/); only the schema location and
+--all directory changed. See NOTICE.
 
 Usage:
     python -m cawg_rubric.validate_rubric <file.yml> [file2.yml ...]

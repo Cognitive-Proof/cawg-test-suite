@@ -1,9 +1,11 @@
 """Assemble composable statement files into built CAWG rubrics.
 
 Adapted from the C2PA Conformance Task Force rubric builder
-(c2pa-org/conformance, asset-rubrics/build_conformance_rubrics.py at commit
-b6d5a1b). Spec-version variable injection was removed; everything else
-(globals loading, used-globals filtering, ID-based deduplication) is unchanged.
+(https://github.com/c2pa-org/conformance-public,
+asset-rubrics/build_conformance_rubrics.py at commit f22ce0a), used under
+CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/). Spec-version variable
+injection was removed; globals loading, used-globals filtering and ID-based
+deduplication are unchanged. See NOTICE.
 
 Usage: python -m cawg_rubric.build
 """

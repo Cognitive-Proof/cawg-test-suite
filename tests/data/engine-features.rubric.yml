@@ -1,0 +1,44 @@
+rubric_metadata:
+  name: Engine feature checks
+  issuer: cawg-test-suite
+  date: "2026-10-13"
+  version: 0.1.0
+  language: en
+
+variables:
+  "$allowed": ["alpha", "beta"]
+
+---
+
+- id: engine:boolean_true
+  expression: length(items) == `2`
+  reportText:
+    'true': {en: "Two items"}
+    'false': {en: "Not two items"}
+
+- id: engine:boolean_false
+  expression: length(items) > `5`
+  reportText:
+    'true': {en: "More than five items"}
+    'false': {en: "Five items or fewer"}
+
+- id: engine:fail_if_matched_clean
+  failIfMatched: true
+  expression: items[?n > `100`].name
+  reportText:
+    'true': {en: "No large items"}
+    'false': {en: "Large items: {{matches}}"}
+
+- id: engine:fail_if_matched_hit
+  failIfMatched: true
+  expression: items[?!contains($allowed, name)].name
+  reportText:
+    'true': {en: "All names allowed"}
+    'false': {en: "Unexpected names: {{matches}}"}
+
+- id: engine:warn_if_matched_hit
+  warnIfMatched: true
+  expression: items[?n > `1`].name
+  reportText:
+    'true': {en: "No item above one"}
+    'false': {en: "Items above one: {{matches}}"}

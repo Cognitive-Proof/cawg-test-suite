@@ -9,7 +9,7 @@ Assertion 1.1 (with 1.2-draft recommendations as warnings), and Training and Dat
 or policy documents here.
 
 - Rubrics (`rubrics/`) check generator output (crJSON) with YAML + json-formula, in the same
-  format as the C2PA Asset Rubrics (c2pa-org/conformance `asset-rubrics/`).
+  format as the C2PA Asset Rubrics (c2pa-org/conformance-public `asset-rubrics/`).
 - Validator cases (`validator_tests/<spec>-cases.yml`) check that a validator's crJSON carries the
   expected status codes for each asset in `fixtures/assets/`. A file-level `subject` (identity,
   metadata, manifest) picks which status entries are checked.
@@ -30,7 +30,7 @@ UPDATE_SNAPSHOTS=1 ./run_tests.sh tests/test_rubric_fixtures.py
 ## Generated identity fixtures
 
 `fixtures/assets/{identity,x509,ica}/` come from the c2pa-rs branch `cawg/conformance-fixtures`
-(local worktree `~/Documents/GitHub/c2pa-rs-cawg-fixtures`, pushed to mrappard/c2pa-rs-text-support).
+(https://github.com/mrappard/c2pa-rs-text-support/tree/cawg/conformance-fixtures).
 The X.509 trust-model cases depend on `tools/crjson-gen/generated_trust_anchor.pem` also being in
 the CAWG `trust_anchors` of `tools/crjson-gen/cawg_test_settings.toml`; the generator mints a new root
 on every run, so replace both together. See README "Generated identity fixtures".
@@ -60,5 +60,9 @@ on every run, so replace both together. See README "Generated identity fixtures"
 - crJSON writers are inconsistent. c2pa-rs 0.91.2 writes `pad1` as a byte array, and the hashes in
   `referenced_assertions` keep a closing `'` that claim hashes don't. Compare through `_hashKey` and
   `_padNonZero`.
-- `cawg_rubric/` is adapted from the C2PA evaluator (commit b6d5a1b). Keep the engine section
-  (`create_json_formula_engine`, `_infer_arities`) in sync with upstream rather than diverging.
+- `cawg_rubric/` is adapted from the C2PA evaluator in c2pa-org/conformance-public (commit f22ce0a,
+  CC BY 4.0). Keep the engine section (`create_json_formula_engine`, `_infer_arities`) in sync with
+  upstream rather than diverging, and keep the attribution in NOTICE and the file headers.
+- Licensing: original work is MIT OR Apache-2.0 (LICENSE-MIT, LICENSE-APACHE). Anything copied in
+  from elsewhere must have a compatible licence and be listed in NOTICE. Never copy from private
+  repositories.
