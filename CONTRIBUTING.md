@@ -108,7 +108,7 @@ Then:
 ### CAWG-Testfiles assets
 
 `fixtures/assets/testfiles/` is copied from the `files/` folder of
-CAWG-Testfiles (not yet published), keeping its paths. Only the cases
+[cawg-test-files](https://github.com/Cognitive-Proof/cawg-test-files) (CAWG-Testfiles), keeping its paths. Only the cases
 this suite didn't already have are imported; `docs/coverage.md` lists them. CAWG-Testfiles
 keeps its credentials between runs, so its trust anchor
 (`tools/crjson-gen/testfiles_trust_anchor.pem`, its `credentials/cawg-test-root.pem`) and its

@@ -162,7 +162,7 @@ and `custom_keys_label_syntax` catch.
 ### CAWG-Testfiles assets
 
 `fixtures/assets/testfiles/` holds 19 assets from
-CAWG-Testfiles (not yet published), a separate generator that signs
+[cawg-test-files](https://github.com/Cognitive-Proof/cawg-test-files) (CAWG-Testfiles), a separate generator that signs
 CAWG assertions itself rather than through c2pa-rs's identity builder. The suite imports only
 cases it didn't already have, and keeps CAWG-Testfiles' folder layout and file names:
 - `identity/{trusted,well-formed,invalid}`, by the outcome CAWG-Testfiles labels them with
