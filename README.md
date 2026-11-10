@@ -133,14 +133,18 @@ Fixes for those failures have been proposed upstream:
 | [contentauth/c2pa-rs#2842](https://github.com/contentauth/c2pa-rs/pull/2842) | Report `cawg.identity.cbor.invalid` instead of failing to load the manifest |
 | [contentauth/c2pa-rs#2843](https://github.com/contentauth/c2pa-rs/pull/2843) | Resolve references into ingredient claims; report `hard_binding_incorrect` |
 | [contentauth/c2pa-rs#2844](https://github.com/contentauth/c2pa-rs/pull/2844) | Enforce type-specific verified-identity fields; regenerate the ICA fixtures |
+| [contentauth/c2pa-rs#3052](https://github.com/contentauth/c2pa-rs/pull/3052) | Decode `did:jwk` identifiers as unpadded base64url |
+| [contentauth/c2pa-rs#3053](https://github.com/contentauth/c2pa-rs/pull/3053) | Report `cawg.ica.signer_payload.mismatch` when `c2paAsset` covers fewer assertions |
+| [contentauth/c2pa-rs#3054](https://github.com/contentauth/c2pa-rs/pull/3054) | Reject an empty or blank `role` array |
+| [contentauth/c2pa-rs#3055](https://github.com/contentauth/c2pa-rs/pull/3055) | Read metadata assertions with a JSON-LD `@context` array or no `@context` |
+| [contentauth/c2pa-rs#3056](https://github.com/contentauth/c2pa-rs/pull/3056) | Report `cawg.identity.trusted` for a trusted named actor (stacked on #2837) |
 
 With the first eight applied, c2pa-rs passes 59 of the original 61 cases, and #2844 fixes one
 more. The remaining case, the interim trust model's certificate policies, is raised in
 [contentauth/c2pa-rs#2845](https://github.com/contentauth/c2pa-rs/issues/2845).
 
-The CAWG-Testfiles cases found five more c2pa-rs bugs. Their fixes are on branches not yet
-proposed upstream; [TODO.md](TODO.md) lists them. With all fixes merged onto current
-c2pa-rs `main`, every CAWG-Testfiles case passes.
+The CAWG-Testfiles cases found five more c2pa-rs bugs, fixed by #3052 to #3056. With all of
+these merged onto current c2pa-rs `main`, every CAWG-Testfiles case passes.
 
 ## Findings in the specifications
 

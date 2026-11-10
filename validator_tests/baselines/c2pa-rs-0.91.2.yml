@@ -65,46 +65,44 @@ known_failures:
       no status of its own.
 
   # --- CAWG-Testfiles assets (fixtures/assets/testfiles/) ---
-  # Every one of these passes on c2pa-rs main plus the fix branches merged into
-  # cawg/testfiles on mrappard/c2pa-rs-text-support (see TODO.md).
+  # Every one of these passes on c2pa-rs main with the open fix PRs merged
+  # (see TODO.md).
   - id: tf_ica_trusted_issuer
     reason: >-
       Decodes the did:jwk identifier as padded base64url. did:jwk is unpadded, so the
-      issuer DID fails with cawg.ica.invalid_did_document (branch
-      fix/cawg-ica-did-jwk-unpadded).
+      issuer DID fails with cawg.ica.invalid_did_document (#3052).
   - id: tf_identity_trusted_ica
     reason: >-
       Never issues cawg.identity.trusted, and issues neither trusted nor well-formed for
-      ICA credentials (branch fix/cawg-identity-trusted; also blocked by the did:jwk bug).
+      ICA credentials (#3056; also blocked by the did:jwk bug).
   - id: tf_identity_x509_and_ica
     reason: >-
       The ICA assertion fails with cawg.ica.invalid_did_document (did:jwk padding), and
       the X.509 assertion's well-formed is reported under cawg.identity, not __1 (#2836).
   - id: tf_identity_trusted_x509
-    reason: Never issues cawg.identity.trusted (branch fix/cawg-identity-trusted).
+    reason: Never issues cawg.identity.trusted (#3056).
   - id: tf_x509_email_without_policy
     reason: >-
       Trusts an emailProtection certificate with no certificate policy. Interim policy
       OIDs aren't checked (#2845); fixed upstream by c2pa-rs#3024.
   - id: tf_ica_untrusted_issuer
-    reason: Fails with cawg.ica.invalid_did_document (did:jwk padding) before the issuer is checked.
+    reason: Fails with cawg.ica.invalid_did_document (did:jwk padding, #3052) before the issuer is checked.
   - id: tf_signer_payload_missing
     reason: No cawg.identity.cbor.invalid in crJSON (#2842).
   - id: tf_role_empty_array
     reason: >-
-      Accepts role: [] and reports the assertion well-formed (branch
-      fix/cawg-identity-role-cddl, together with #2842).
+      Accepts role: [] and reports the assertion well-formed (#3054, together with #2842).
   - id: tf_ica_c2pa_asset_covers_fewer_assertions
     reason: >-
       Masked by the did:jwk padding bug here. With that fixed, the c2paAsset cross-check
       zips the two referenced_assertions lists, so a credential covering fewer assertions
-      still matches (branch fix/cawg-ica-signer-payload-length).
+      still matches (#3053).
   - id: tf_ica_social_media_without_username
     reason: Fails with cawg.ica.invalid_did_document (did:jwk padding); type-specific fields need #2844.
   - id: tf_metadata_context_array
     reason: >-
       Reader can't read the asset: every *.metadata assertion is parsed with the
       c2pa.metadata model, which needs @context to be a map, so the whole manifest store
-      fails to load (branch fix/metadata-unparseable-jsonld). crjson-gen writes no crJSON.
+      fails to load (#3055). crjson-gen writes no crJSON.
   - id: tf_metadata_context_missing
     reason: Reader can't read the asset (see tf_metadata_context_array).
