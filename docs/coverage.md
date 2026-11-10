@@ -106,10 +106,11 @@ Each case names an asset and the codes that must, or must not, appear for it.
 A case file sets which status entries a case looks at (`subject`): the identity
 assertion, the metadata assertion, or the whole manifest.
 
-[`identity-1.3-cases.yml`](../validator_tests/identity-1.3-cases.yml) has 49 cases:
+[`identity-1.3-cases.yml`](../validator_tests/identity-1.3-cases.yml) has 62 cases:
 - 13 for identity assertion structure and the validation procedure (§5, §7.1, §7.2)
 - 7 for X.509 signatures and the trust model (§8.2)
 - 29 for ICA validation (§8.1.5)
+- 13 using the CAWG-Testfiles assets (`tf_*`, below)
 
 Every identity case also checks one consistency rule: a validator must not
 report `cawg.identity.well-formed` or `cawg.identity.trusted` for an assertion
@@ -123,15 +124,50 @@ trust identified", which is exactly an untrusted chain, so the spec is ambiguous
 depend on `tools/crjson-gen/generated_trust_anchor.pem`, which `cawg_test_settings.toml`
 includes as a CAWG trust anchor. Configure a validator under test the same way.
 
-[`metadata-1.1-cases.yml`](../validator_tests/metadata-1.1-cases.yml) has 8 cases. The
+The `tf_*` cases use assets from [CAWG-Testfiles](#cawg-testfiles-assets) in
+`fixtures/assets/testfiles/`. They add:
+- **`cawg.identity.trusted`.** §7.2 requires it once a root of trust is found for the named
+  actor. `tf_identity_trusted_x509` and `tf_identity_trusted_ica` require it, where the
+  older cases accept `well-formed` or `trusted`.
+- **An ICA issuer on the trusted list.** Its `did:jwk` is unpadded base64url, as the did:jwk
+  method requires. `tf_ica_trusted_issuer` expects `cawg.ica.credential_valid`, and
+  `tf_ica_untrusted_issuer` is its untrusted counterpart.
+- **New validation cases:** an X.509 identity and an ICA identity in one claim; no role; a
+  hard-binding-only reference; an `emailProtection` certificate without a policy; an X.509
+  signature over a different payload; no `signer_payload`; `role: []`; a `c2paAsset` covering
+  fewer assertions than `signer_payload`; and `cawg.social_media` without `username`.
+
+These assets need a second CAWG trust anchor,
+`tools/crjson-gen/testfiles_trust_anchor.pem`, and the issuer DID in `trusted_ica_issuers`.
+Both are in `cawg_test_settings.toml`.
+
+[`metadata-1.1-cases.yml`](../validator_tests/metadata-1.1-cases.yml) has 10 cases. The
 metadata spec defines no status codes, so these check that metadata never causes
 a failure:
 - Fields outside the `c2pa.metadata` allowed list must not be rejected.
 - Gathered metadata, multiple instances, undefined prefixes and media
   identifiers must all validate.
 - An identity assertion that attests to the metadata must validate.
+- `@context` as an array (valid JSON-LD) must validate.
+- A missing `@context` should not stop the manifest from being read.
 
-[`training-mining-1.1-cases.yml`](../validator_tests/training-mining-1.1-cases.yml) has 4 cases. The
+[`training-mining-1.1-cases.yml`](../validator_tests/training-mining-1.1-cases.yml) has 6 cases. The
 spec defines no status codes either, so these check that valid assertions never cause a failure:
-all four keys, a custom key, a constrained entry, and identity attestation. The invalid
-training-mining assets exist only for the generator rubric.
+all four keys, a custom key, a constrained entry with and without `constraint_info`, the
+optional `metadata` map, and identity attestation. The invalid training-mining assets exist only
+for the generator rubric. Among them are CAWG-Testfiles' empty `constraint_info`, entry without
+`use`, and custom key that isn't a label, which `constraint_info_wellformed`, `use_values_valid`
+and `custom_keys_label_syntax` catch.
+
+### CAWG-Testfiles assets
+
+`fixtures/assets/testfiles/` holds 19 assets from
+CAWG-Testfiles (not yet published), a separate generator that signs
+CAWG assertions itself rather than through c2pa-rs's identity builder. The suite imports only
+cases it didn't already have, and keeps CAWG-Testfiles' folder layout and file names:
+- `identity/{trusted,well-formed,invalid}`, by the outcome CAWG-Testfiles labels them with
+- `metadata/{valid,invalid}`
+- `training-mining/{valid,invalid}`
+
+Its metadata stored as CBOR (`mx03_cbor_box`) breaks the JSON box rule, which crJSON can't
+show, so it's a rubric-only asset.

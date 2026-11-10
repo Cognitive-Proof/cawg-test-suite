@@ -60,7 +60,7 @@ with a reason. CI requires the baseline to match exactly.
 Rebuild crJSON from the assets (needs Rust 1.96; `tools/crjson-gen/rust-toolchain.toml` pins it):
 
 ```bash
-cargo run --release --manifest-path tools/crjson-gen/Cargo.toml -- fixtures/assets fixtures/crjson
+cargo run --release --manifest-path tools/crjson-gen/Cargo.toml --bin crjson-gen -- fixtures/assets fixtures/crjson
 UPDATE_SNAPSHOTS=1 ./run_tests.sh cawg-tests.yml
 ```
 
@@ -104,6 +104,16 @@ Then:
    Also replace the matching certificate at the end of the CAWG `trust_anchors` in
    `cawg_test_settings.toml`. The generator makes a new root on every run.
 4. Rebuild crjson-gen and regenerate the crJSON.
+
+### CAWG-Testfiles assets
+
+`fixtures/assets/testfiles/` is copied from the `files/` folder of
+CAWG-Testfiles (not yet published), keeping its paths. Only the cases
+this suite didn't already have are imported; `docs/coverage.md` lists them. CAWG-Testfiles
+keeps its credentials between runs, so its trust anchor
+(`tools/crjson-gen/testfiles_trust_anchor.pem`, its `credentials/cawg-test-root.pem`) and its
+trusted issuer DID in `cawg_test_settings.toml` only change if its `credentials/` folder is
+regenerated. To refresh the assets, copy the same files again and regenerate their crJSON.
 
 ## Licensing of contributions
 

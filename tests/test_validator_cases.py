@@ -54,4 +54,4 @@ def test_wrapper_cli_uses_core_cases(capsys):
     crjson_dir = os.path.join(REPO_ROOT, "fixtures", "crjson")
     baseline = os.path.join(REPO_ROOT, "validator_tests", "baselines", "c2pa-rs-0.91.2.yml")
     assert check_validator.main([crjson_dir, "--baseline", baseline]) == 0
-    assert "44/61 cases passed" in capsys.readouterr().out
+    assert "49/78 cases passed" in capsys.readouterr().out

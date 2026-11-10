@@ -60,3 +60,17 @@ cases:
     description: Media industry identifiers (urn:doi, urn:eidr) attested by an identity assertion.
     spec_section: "1.2-draft §Use with media industry identifiers"
     forbid_any_failure: true
+
+  # --- CAWG-Testfiles assets (fixtures/assets/testfiles/) -------------------
+  - id: tf_metadata_context_array
+    asset: testfiles/metadata/valid/m03_context_array.jpg
+    description: "@context as an array of an IRI and a term map, which JSON-LD allows."
+    spec_section: "§Assertion definition"
+    forbid_any_failure: true
+
+  - id: tf_metadata_context_missing
+    asset: testfiles/metadata/invalid/mx01_context_missing.jpg
+    description: cawg.metadata without @context. A generator error, but it should not stop the C2PA Manifest from being read and validated.
+    spec_section: "§Assertion definition"
+    level: should
+    forbid_any_failure: true

@@ -15,3 +15,9 @@ rubric_only_assets:
   - training-mining/missing_entries.jpg
   - training-mining/constraints_info_spelling.jpg
   - training-mining/legacy_c2pa_label.jpg
+  # CAWG-Testfiles: metadata stored as CBOR (the JSON box rule can't be seen in
+  # crJSON), and training-mining assets that break the CDDL.
+  - testfiles/metadata/invalid/mx03_cbor_box.jpg
+  - testfiles/training-mining/invalid/tmx04_constraint_info_empty.jpg
+  - testfiles/training-mining/invalid/tmx05_use_missing.jpg
+  - testfiles/training-mining/invalid/tmx06_custom_key_not_a_label.jpg

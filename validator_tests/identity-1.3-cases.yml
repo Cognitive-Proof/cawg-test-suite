@@ -346,3 +346,91 @@ cases:
     spec_section: "§8.1.5"
     level: should
     expect_any: [cawg.ica.revocation.unsupported]
+
+  # --- CAWG-Testfiles assets (fixtures/assets/testfiles/) -------------------
+  # Signed outside c2pa-rs's identity builder, with their own CAWG test root
+  # (tools/crjson-gen/testfiles_trust_anchor.pem) and a did:jwk ICA issuer, both
+  # trusted in cawg_test_settings.toml.
+  - id: tf_ica_trusted_issuer
+    asset: testfiles/identity/trusted/t05_ica_verified_identities.jpg
+    description: ICA credential from a trusted did:jwk issuer (unpadded base64url, as did:jwk requires), with one verified identity of each type.
+    spec_section: "§8.1.2.5, §8.1.5"
+    expect_success: [cawg.ica.credential_valid]
+    forbid_failure_prefixes: [cawg.]
+
+  - id: tf_identity_trusted_ica
+    asset: testfiles/identity/trusted/t05_ica_verified_identities.jpg
+    description: A validated ICA credential from a trusted issuer gives the named actor a root of trust, so the assertion is trusted, not just well-formed.
+    spec_section: "§7.2"
+    expect_success: [cawg.identity.trusted]
+
+  - id: tf_identity_x509_and_ica
+    asset: testfiles/identity/trusted/t06_x509_publisher_and_ica_creator.jpg
+    description: An ICA creator and an X.509 publisher in one claim; each assertion validates under its own label.
+    spec_section: "§7.2"
+    per_assertion: true
+    expect_any: [cawg.identity.well-formed, cawg.identity.trusted]
+    forbid_failure_prefixes: [cawg.]
+
+  - id: tf_identity_trusted_x509
+    asset: testfiles/identity/trusted/t08_x509_no_role.jpg
+    description: An X.509 identity (documentSigning EKU) chaining to a configured CAWG trust anchor is trusted, not just well-formed.
+    spec_section: "§7.2, §8.2.4"
+    expect_success: [cawg.identity.trusted]
+
+  - id: tf_identity_no_role
+    asset: testfiles/identity/trusted/t08_x509_no_role.jpg
+    description: signer_payload without role; role is optional.
+    spec_section: "§5.2"
+    expect_any: [cawg.identity.well-formed, cawg.identity.trusted]
+    forbid_failure_prefixes: [cawg.]
+
+  - id: tf_identity_hard_binding_only
+    asset: testfiles/identity/trusted/t09_x509_hard_binding_only.jpg
+    description: referenced_assertions holds only the hard binding, the minimum §5.1.1 allows.
+    spec_section: "§5.1.1"
+    expect_any: [cawg.identity.well-formed, cawg.identity.trusted]
+    forbid_failure_prefixes: [cawg.]
+
+  - id: tf_x509_email_without_policy
+    asset: testfiles/identity/well-formed/w03_x509_email_without_policy.jpg
+    description: emailProtection certificate with no certificate policy chained to a CAWG trust anchor. The interim trust model needs one of its policies, and the EKU isn't documentSigning.
+    spec_section: "§8.2.4"
+    expect_failure: [cawg.x509.credential.untrusted]
+
+  - id: tf_ica_untrusted_issuer
+    asset: testfiles/identity/well-formed/w05_ica_untrusted_issuer.jpg
+    description: Valid ICA credential from a did:jwk issuer that isn't on the trusted issuer list (unpadded base64url DID).
+    spec_section: "§8.1.5"
+    expect_any: [cawg.ica.untrusted_issuer]
+    forbid_failure_prefixes: [cawg.identity., cawg.ica.signature, cawg.ica.invalid, cawg.ica.signer_payload, cawg.ica.valid_, cawg.ica.verified_identities]
+
+  - id: tf_x509_signed_different_payload
+    asset: testfiles/identity/invalid/x04_x509_signed_different_payload.jpg
+    description: The COSE signature covers a signer_payload with fewer referenced assertions than the assertion's.
+    spec_section: "§8.2.2"
+    expect_failure: [cawg.x509.signature.mismatch]
+
+  - id: tf_signer_payload_missing
+    asset: testfiles/identity/invalid/x10_signer_payload_missing.jpg
+    description: The identity assertion has no signer_payload.
+    spec_section: "§5.2, §7.1"
+    expect_failure: [cawg.identity.cbor.invalid]
+
+  - id: tf_role_empty_array
+    asset: testfiles/identity/invalid/x11_role_empty_array.jpg
+    description: role is an empty array; the CDDL requires at least one entry. The signature is otherwise valid.
+    spec_section: "§5.2, §7.1"
+    expect_failure: [cawg.identity.cbor.invalid]
+
+  - id: tf_ica_c2pa_asset_covers_fewer_assertions
+    asset: testfiles/identity/invalid/x14_ica_signer_payload_mismatch.jpg
+    description: The credential's c2paAsset lists fewer referenced assertions than the identity assertion's signer_payload (a prefix of it).
+    spec_section: "§8.1.5"
+    expect_failure: [cawg.ica.signer_payload.mismatch]
+
+  - id: tf_ica_social_media_without_username
+    asset: testfiles/identity/invalid/x20_ica_social_media_without_username.jpg
+    description: A cawg.social_media verified identity without username.
+    spec_section: "§8.1.2.5, §8.1.5"
+    expect_failure: [cawg.ica.verified_identities.invalid]

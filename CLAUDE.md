@@ -31,7 +31,7 @@ or policy documents here.
 .venv/bin/cawg-suite check-validator <crjson-dir> [--project DIR] [--baseline ...]
 .venv/bin/cawg-suite build --plugin examples/plugins/example-music
 .venv/bin/python fixtures/unit/make_unit_fixtures.py
-cargo run --release --manifest-path tools/crjson-gen/Cargo.toml -- fixtures/assets fixtures/crjson
+cargo run --release --manifest-path tools/crjson-gen/Cargo.toml --bin crjson-gen -- fixtures/assets fixtures/crjson
 cargo run --release --manifest-path tools/crjson-gen/Cargo.toml --bin make-assets -- fixtures/assets [group]
 UPDATE_SNAPSHOTS=1 ./run_tests.sh cawg-tests.yml
 ```
@@ -43,6 +43,12 @@ UPDATE_SNAPSHOTS=1 ./run_tests.sh cawg-tests.yml
 The X.509 trust-model cases depend on `tools/crjson-gen/generated_trust_anchor.pem` also being in
 the CAWG `trust_anchors` of `tools/crjson-gen/cawg_test_settings.toml`; the generator mints a new root
 on every run, so replace both together. See CONTRIBUTING.md "Generated identity fixtures".
+
+## CAWG-Testfiles assets
+
+`fixtures/assets/testfiles/` comes from the CAWG-Testfiles generator (same layout and file names).
+It needs `tools/crjson-gen/testfiles_trust_anchor.pem` in the CAWG `trust_anchors` and its did:jwk
+issuer in `trusted_ica_issuers` of `cawg_test_settings.toml`. Cases for these assets are `tf_*`.
 
 ## Conventions
 

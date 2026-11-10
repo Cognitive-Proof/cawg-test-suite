@@ -32,12 +32,12 @@ Fix PRs opened against contentauth/c2pa-rs (one branch each on mrappard/c2pa-rs-
 - [ ] contentauth/c2pa-rs#2838: `cawg.ica.did_unsupported_method` (`ica_did_unsupported_method`); also fixes a copy-pasted c2pa-rs test
 - [ ] contentauth/c2pa-rs#2839: `cawg.ica.verified_identities.missing` / `.invalid` (`ica_verified_identities_empty`, `ica_verified_identity_missing_provider_name`)
 - [ ] contentauth/c2pa-rs#2840: `cawg.ica.revocation.unsupported` (`ica_revocation_unsupported`)
-- [ ] contentauth/c2pa-rs#2841: X.509 statuses use the identity assertion's URL, not `Cose_Sign1` (`x509_algorithm_unsupported`)
+- [x] contentauth/c2pa-rs#2841: X.509 statuses use the identity assertion's URL, not `Cose_Sign1` (`x509_algorithm_unsupported`). Merged upstream (c13b05fd). As of 2026-11-10 the other seven are still open.
 - [ ] contentauth/c2pa-rs#2842: `cawg.identity.cbor.invalid` instead of failing to load the manifest (`cbor_invalid`)
 - [ ] contentauth/c2pa-rs#2843: resolve references into ingredient claims and report `cawg.identity.hard_binding_incorrect` (`identity_references_ingredient_assertion`, and `identity_hard_binding_incorrect` together with #2837)
 
 Still open in c2pa-rs; these need an issue or a decision first:
-- [ ] contentauth/c2pa-rs#2845: interim trust model certificate-policy OIDs are not enforced (`x509_interim_mailbox_policy`). Design discussion needed.
+- [ ] contentauth/c2pa-rs#2845: interim trust model certificate-policy OIDs are not enforced (`x509_interim_mailbox_policy`, `tf_x509_email_without_policy`). Upstream contentauth/c2pa-rs#3024 (merged 2026-11-05) enforces the policies and the cutoff; close #2845 once confirmed in a release.
 - [ ] contentauth/c2pa-rs#2844 (stacked on #2839): enforce type-specific verified-identity fields, fix `ica_example_identities()`, and regenerate all bundled `ica_validation/*.jpg` fixtures with a new ignored regenerator test (`ica_crypto_wallet_missing_address`).
 - [ ] Once #2844 merges, refresh this suite's copies under `fixtures/assets/claim_aggregation/ica_validation/`. They are the old fixtures, which still carry the crypto_wallet `username` bug, so regenerate their crJSON and update the baseline.
 - [ ] contentauth/c2pa-rs#2846: `Reader::post_validate` (`walk_manifest`) builds assertion URIs from the base label, so repeated assertions collide (follow-up to #2836).
@@ -52,6 +52,17 @@ Still open in c2pa-rs; these need an issue or a decision first:
   - Hashes in `referenced_assertions` keep a trailing `'` that claim hashes don't.
   - ICA crJSON omits the VC's `@context`, `type`, `issuanceDate` and `c2paAsset`.
 - [ ] Adobe's ICA assets (`adobe_connected_identities`, `ims_multiple_manifests`) write a legacy `c2pa.training-mining` assertion alongside `cawg.training-mining`. Probably deliberate for compatibility; worth confirming with Adobe.
+Found with the CAWG-Testfiles assets (`tf_*` cases). The fixes are on branches of mrappard/c2pa-rs-text-support, local only and not yet PRs. Each is merged, with the branches above, into `cawg/testfiles`; with that build every `tf_*` case passes:
+- [ ] `fix/cawg-identity-trusted`: `cawg.identity.trusted` is never issued (c2pa-rs TODO CAI-7980), and ICA credentials get neither `trusted` nor `well-formed` (`tf_identity_trusted_x509`, `tf_identity_trusted_ica`).
+- [ ] `fix/cawg-ica-did-jwk-unpadded`: the `did:jwk` identifier is decoded as padded base64url, so most Ed25519 `did:jwk` issuers fail with `cawg.ica.invalid_did_document`. Only the c2pa-rs fixture DID happens to work (`tf_ica_*`).
+- [ ] `fix/cawg-ica-signer-payload-length`: the `c2paAsset` cross-check zips the two `referenced_assertions` lists, so a credential covering fewer assertions than `signer_payload` matches (`tf_ica_c2pa_asset_covers_fewer_assertions`). Security-relevant: the extra assertions read as attested.
+- [ ] `fix/cawg-identity-role-cddl`: `role: []` and blank roles are accepted (`tf_role_empty_array`).
+- [ ] `fix/metadata-unparseable-jsonld`: a `cawg.metadata` assertion that c2pa-rs's `c2pa.metadata` model can't parse (a JSON-LD `@context` array, or no `@context`) makes the whole manifest store unreadable (`tf_metadata_context_array`, `tf_metadata_context_missing`). crjson-gen writes no crJSON for them.
+- [ ] Not fixed: c2pa-rs only accepts EdDSA for ICA credentials, but §8.1 also allows ES256/384/512 and PS256/384/512. No case yet.
+- [ ] Not fixed: an X.509 identity signature with no `x5chain` produces no `cawg.*` status at all; the error is discarded. No case yet.
+- [ ] Not fixed: CAWG failures affect the C2PA validation state inconsistently. An invalid X.509 identity leaves the manifest `Valid`, an invalid ICA one makes it `Invalid`. An untrusted X.509 identity lowers `Trusted` to `Valid`, an untrusted ICA issuer doesn't. Related to decentralized-identity/cawg-identity-assertion#289.
+
+- [ ] **Decision needed for current c2pa-rs `main`.** Since #3024, the c2pa-rs test certificate (`emailProtection`, no S/MIME policy) is an *untrusted* CAWG identity. Ten existing cases that use it forbid every `cawg.` failure, so they fail on `main` with `cawg.x509.credential.untrusted`: `x509_valid`, `extra_field_ignored`, `identity_multiple_assertions`, `identity_custom_role`, `identity_references_ingredient_assertion`, `metadata_gathered_with_identity`, `metadata_identity_attests`, `metadata_media_identifiers`, `tdm_constrained_identity_attested` and `tdm_identity_attests`. Either allow `cawg.x509.credential.untrusted` there (they test structure, not trust), or re-sign those assets with a documentSigning certificate.
 - [ ] Re-run the suite against a newer c2pa-rs (upstream `main` or the next release). The tool builds against upstream `main` via `--config patch.crates-io.c2pa.path=...`, but the results were never compared. Update the baseline if anything is fixed.
 
 ## Coverage gaps in this suite
@@ -115,6 +126,8 @@ Still open in c2pa-rs; these need an issue or a decision first:
 - [ ] When the metadata spec 1.2 is ratified, promote the 1.2-draft warnings to the rules the final text makes normative, and rename the rubric. Both are plugin-API changes (warning to failure, new profile ID), so they need a minor version bump.
 
 ## Done
+
+- [x] Imported 19 CAWG-Testfiles assets (`fixtures/assets/testfiles/`) with 17 validator cases (`tf_*`), its CAWG trust anchor and trusted ICA issuer. Also fixed the crjson-gen command in CONTRIBUTING/CLAUDE.md, which needs `--bin crjson-gen`.
 
 - [x] Identity Assertion 1.3 rubric, validator cases and fixtures.
 - [x] Metadata Assertion 1.1 rubric (plus 1.2-draft warnings), validator cases, and signed assets via `make-assets`.

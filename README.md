@@ -19,9 +19,9 @@ profiles on top of it as [plugins](#extending-the-suite-with-plugins).
 
 | Specification | Generator checks (rubric) | Validator cases |
 | --- | --- | --- |
-| [Identity Assertion 1.3](https://cawg.io/identity/1.3/): X.509 (`cawg.x509.cose`) and identity claims aggregation (`cawg.identity_claims_aggregation`) | 26 statements: [`cawg-identity-1.3.rubric.yml`](cawg_rubric/rubrics/cawg-identity-1.3.rubric.yml) | 49 cases: [`identity-1.3-cases.yml`](validator_tests/identity-1.3-cases.yml) |
-| [Metadata Assertion 1.1](https://cawg.io/metadata/1.1/), with 1.2-draft recommendations as warnings | 9 statements: [`cawg-metadata-1.1.rubric.yml`](cawg_rubric/rubrics/cawg-metadata-1.1.rubric.yml) | 8 cases: [`metadata-1.1-cases.yml`](validator_tests/metadata-1.1-cases.yml) |
-| [Training and Data Mining Assertion 1.1](https://cawg.io/training-and-data-mining/1.1/) | 11 statements: [`cawg-training-mining-1.1.rubric.yml`](cawg_rubric/rubrics/cawg-training-mining-1.1.rubric.yml) | 4 cases: [`training-mining-1.1-cases.yml`](validator_tests/training-mining-1.1-cases.yml) |
+| [Identity Assertion 1.3](https://cawg.io/identity/1.3/): X.509 (`cawg.x509.cose`) and identity claims aggregation (`cawg.identity_claims_aggregation`) | 26 statements: [`cawg-identity-1.3.rubric.yml`](cawg_rubric/rubrics/cawg-identity-1.3.rubric.yml) | 62 cases: [`identity-1.3-cases.yml`](validator_tests/identity-1.3-cases.yml) |
+| [Metadata Assertion 1.1](https://cawg.io/metadata/1.1/), with 1.2-draft recommendations as warnings | 9 statements: [`cawg-metadata-1.1.rubric.yml`](cawg_rubric/rubrics/cawg-metadata-1.1.rubric.yml) | 10 cases: [`metadata-1.1-cases.yml`](validator_tests/metadata-1.1-cases.yml) |
+| [Training and Data Mining Assertion 1.1](https://cawg.io/training-and-data-mining/1.1/) | 11 statements: [`cawg-training-mining-1.1.rubric.yml`](cawg_rubric/rubrics/cawg-training-mining-1.1.rubric.yml) | 6 cases: [`training-mining-1.1-cases.yml`](validator_tests/training-mining-1.1-cases.yml) |
 
 [docs/coverage.md](docs/coverage.md) lists what every statement and case checks, and
 what can't be checked.
@@ -40,7 +40,9 @@ program. Any C2PA validator that can produce crJSON can be tested.
 
 The test assets include valid and deliberately broken examples of each assertion.
 They are signed with the c2pa-rs test credentials, and include certificates minted
-for the trust-model cases.
+for the trust-model cases. The assets in `fixtures/assets/testfiles/` come from
+[CAWG-Testfiles](docs/coverage.md#cawg-testfiles-assets), which has its own CAWG test root
+and identity claims aggregation issuer.
 
 ## Quick start
 
@@ -81,9 +83,11 @@ Then:
 
 Run it from the repository root, where `cawg-tests.yml` lists the cases.
 
-For the X.509 trust-model cases, configure
+For the X.509 trust-model cases, configure both
 [`tools/crjson-gen/generated_trust_anchor.pem`](tools/crjson-gen/generated_trust_anchor.pem)
-as a CAWG trust anchor in your validator.
+and [`tools/crjson-gen/testfiles_trust_anchor.pem`](tools/crjson-gen/testfiles_trust_anchor.pem)
+as CAWG trust anchors in your validator. Also trust the ICA issuer DID listed under
+`trusted_ica_issuers` in [`cawg_test_settings.toml`](tools/crjson-gen/cawg_test_settings.toml).
 
 ## Extending the suite with plugins
 
@@ -110,8 +114,8 @@ cawg-suite evaluate music-1.0 my-song.crjson.json --plugin examples/plugins/exam
 
 The reference results in [`fixtures/crjson/`](fixtures/crjson/) come from
 [c2pa-rs](https://github.com/contentauth/c2pa-rs) 0.91.2.
-- It passes **44 of 61** validator cases, including every metadata and
-  training-mining case.
+- It passes **49 of 78** validator cases. Every original metadata and
+  training-mining case passes; it can't read two of the CAWG-Testfiles metadata assets.
 - Each failure is listed with its reason in
   [`validator_tests/baselines/c2pa-rs-0.91.2.yml`](validator_tests/baselines/c2pa-rs-0.91.2.yml).
 - CI requires that baseline to match exactly.
@@ -130,9 +134,13 @@ Fixes for those failures have been proposed upstream:
 | [contentauth/c2pa-rs#2843](https://github.com/contentauth/c2pa-rs/pull/2843) | Resolve references into ingredient claims; report `hard_binding_incorrect` |
 | [contentauth/c2pa-rs#2844](https://github.com/contentauth/c2pa-rs/pull/2844) | Enforce type-specific verified-identity fields; regenerate the ICA fixtures |
 
-With the first eight applied, c2pa-rs passes 59 of 61 cases, and #2844 fixes one more.
-The remaining case, the interim trust model's certificate policies, is raised in
+With the first eight applied, c2pa-rs passes 59 of the original 61 cases, and #2844 fixes one
+more. The remaining case, the interim trust model's certificate policies, is raised in
 [contentauth/c2pa-rs#2845](https://github.com/contentauth/c2pa-rs/issues/2845).
+
+The CAWG-Testfiles cases found five more c2pa-rs bugs. Their fixes are on branches not yet
+proposed upstream; [TODO.md](TODO.md) lists them. With all fixes merged onto current
+c2pa-rs `main`, every CAWG-Testfiles case passes.
 
 ## Findings in the specifications
 

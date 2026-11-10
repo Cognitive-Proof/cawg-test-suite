@@ -41,3 +41,16 @@ cases:
     spec_section: "Identity 1.3 §7.2"
     expect_any: [cawg.identity.well-formed, cawg.identity.trusted]
     forbid_failure_prefixes: [cawg.]
+
+  # --- CAWG-Testfiles assets (fixtures/assets/testfiles/) -------------------
+  - id: tf_tdm_constrained_without_info
+    asset: testfiles/training-mining/valid/tm02_constrained.jpg
+    description: One constrained entry with constraint_info and one without (§Overview treats the latter as notAllowed), referenced by an identity assertion.
+    spec_section: "§Overview"
+    forbid_any_failure: true
+
+  - id: tf_tdm_with_metadata
+    asset: testfiles/training-mining/valid/tm04_with_metadata.jpg
+    description: Entries plus the optional metadata map.
+    spec_section: "§Overview"
+    forbid_any_failure: true
