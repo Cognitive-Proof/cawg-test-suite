@@ -75,7 +75,7 @@ Found with the CAWG-Testfiles assets (`tf_*` cases). The fixes are on branches o
   - ICA revocation beyond `revocation.unsupported`
   - the interim trust model's 31 March 2027 cutoff
 - [ ] The interim trust fixtures (`x509/interim_*`) are only meaningful until 2027-03-31 unless they carry a trusted time stamp.
-- [ ] Identity: most c2pa-rs ICA test assets show a certificate rather than the VC in crJSON, so the ICA rubric checks only run on the hand-built fixtures and the two real-world assets.
+- [ ] Identity: most c2pa-rs ICA test assets show a certificate rather than the VC in crJSON, so the ICA rubric checks skip them. They run on the hand-built fixtures, the two real-world assets, and the five CAWG-Testfiles ICA assets (t05, t06, w05, x14 and x20 under `testfiles/identity/`). `ica_verified_identity_type_fields` catches x20's social media identity without `username`. Regenerating the c2pa-rs `ica_validation/` fixtures without `x5chain` would cover the rest.
 - [ ] Metadata: the "JSON content type box" requirement can't be checked from crJSON (it doesn't record JSON vs CBOR).
 - [ ] Metadata: remote `@context` documents are not fetched. `terms_defined_in_context` skips them.
 - [ ] Training and data mining: no validator expectations for the invalid assets (bad `use`, undefined `cawg.*` key, missing `entries`); the spec defines no status codes. Revisit if CAWG adds any.
